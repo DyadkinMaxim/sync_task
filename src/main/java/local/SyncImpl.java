@@ -1,7 +1,6 @@
 package local;
 
 import fileManagement.FileManager;
-import fileManagement.LocalTargetFile;
 import fileManagement.TargetFile;
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +16,7 @@ public class SyncImpl implements Sync {
     private static boolean globalPause = false;
 
     @Override
-    public void synchronize(File source, TargetFile target, FileManager fm) throws IOException {
+    public synchronized void synchronize(File source, TargetFile target, FileManager fm) throws IOException {
         if (source.isDirectory()) {
             if (!target.exists()) {
                 if (!target.mkdirs()) {
@@ -36,7 +35,7 @@ public class SyncImpl implements Sync {
             //delete files not present in source
             for (String fileName : targets) {
                 if (!srcNames.contains(fileName)) {
-                    fm.delete(new File( target.getFile(), fileName ));
+                    fm.delete(new File(target.getFile(), fileName));
                 }
             }
             //copy each file from source

@@ -9,7 +9,7 @@ public class LocalFileManager implements FileManager {
 
     @Override
     public void copyFile(File source, TargetFile targetFile) throws IOException {
-        Files.copy(source.toPath(), targetFile.toPath(), StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(source.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     @Override

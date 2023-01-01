@@ -37,6 +37,24 @@ public class SSHLoader implements RemoteLoader {
 
     }
 
+
+    public void execute() throws Exception {
+        final SSHClient sshClient = new SSHClient();
+        sshClient.addHostKeyVerifier(new PromiscuousVerifier());
+        sshClient.loadKnownHosts();
+        sshClient.connect(sftpHost);
+        System.out.println("Connected");
+        try {
+            sshClient.authPassword(sftpUser, sftpPassword);
+            sshClient.useCompression();
+            sshClient.newSCPFileTransfer().upload(loadDirectory, sftpPath);
+        } finally {
+            sshClient.disconnect();
+            System.out.println("Disconnected");
+        }
+    }
+
+    @Override
     public void download() throws Exception {
         final SSHClient sshClient = new SSHClient();
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
@@ -57,6 +75,7 @@ public class SSHLoader implements RemoteLoader {
         }
     }
 
+    @Override
     public void upload() throws Exception {
         final SSHClient sshClient = new SSHClient();
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
