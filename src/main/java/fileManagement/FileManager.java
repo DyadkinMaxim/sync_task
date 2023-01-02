@@ -7,5 +7,5 @@ public interface FileManager {
 
     void copyFile(File source, TargetFile target) throws IOException;
 
-    void delete(File file);
+    void delete(TargetFile file) throws IOException;
 }

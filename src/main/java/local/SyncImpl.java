@@ -17,6 +17,7 @@ public class SyncImpl implements Sync {
 
     @Override
     public synchronized void synchronize(File source, TargetFile target, FileManager fm) throws IOException {
+        System.out.println("Sync started");
         if (source.isDirectory()) {
             if (!target.exists()) {
                 if (!target.mkdirs()) {
@@ -35,19 +36,22 @@ public class SyncImpl implements Sync {
             //delete files not present in source
             for (String fileName : targets) {
                 if (!srcNames.contains(fileName)) {
-                    fm.delete(new File(target.getFile(), fileName));
+                    fm.delete(target.getChild(fileName));
                 }
             }
+            System.out.println("All files not present is source are deleted");
             //copy each file from source
             for (String fileName : sources) {
                 File sourceFile = new File(source, fileName);
                 TargetFile targetFile = target.getChild(fileName);
+                System.out.println("Sync recursively called for targetfile" + targetFile);
                 synchronize(sourceFile, targetFile, fm);
             }
         } else {
             if (target.exists() && target.isDirectory()) {
-                fm.delete(target.getFile());
+                fm.delete(target);
             }
+            System.out.println("Entered copy section for " + source.getName());
             if (target.exists()) {
                 long sts = source.lastModified() / FAT_PRECISION;
                 long dts = target.lastModified() / FAT_PRECISION;
@@ -59,6 +63,7 @@ public class SyncImpl implements Sync {
                 fm.copyFile(source, target);
             }
         }
+        System.out.println("Sync successfully finished for "+ target.getCanonicalPath());
     }
 
     @Override

@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public interface TargetFile {
+public interface  TargetFile {
 
     File getFile();
 
@@ -14,7 +14,7 @@ public interface TargetFile {
 
     boolean isDirectory();
 
-    String getCanonicalPath() throws IOException;
+    String getCanonicalPath();
 
     String[] list();
 

@@ -35,8 +35,14 @@ public class LocalTargetFile implements TargetFile {
     }
 
     @Override
-    public String getCanonicalPath() throws IOException {
-        return target.getCanonicalPath();
+    public String getCanonicalPath() {
+        String  path = null;
+        try {
+            path = target.getCanonicalPath();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return path;
     }
 
     @Override

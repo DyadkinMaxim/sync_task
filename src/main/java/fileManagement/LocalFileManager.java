@@ -13,7 +13,7 @@ public class LocalFileManager implements FileManager {
     }
 
     @Override
-    public void delete(File file) {
+    public void delete(TargetFile file) {
         try {
             Files.delete(file.toPath());
         } catch (IOException ex) {
