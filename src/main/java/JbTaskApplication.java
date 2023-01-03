@@ -1,27 +1,41 @@
+import fileManagement.FileFactory;
+import fileManagement.FileType;
 import fileManagement.LocalFile;
 import fileManagement.SSHFile;
 import fileManagement.IFile;
 import java.io.File;
 import core.SyncImpl;
+import java.util.HashMap;
+import java.util.Map;
 import net.schmizz.sshj.xfer.FileSystemFile;
 
 public class JbTaskApplication {
 
     private static final String sourceDir = "C:\\Users\\Dyadkin Maxim\\Desktop\\jb_task\\source\\";
-    private static final String targetDir = "C:\\Users\\Dyadkin Maxim\\Desktop\\jb_task\\source\\";
-    private static final String sshPath = "/test";
+    private static final String targetDir = "C:\\Users\\Dyadkin Maxim\\Desktop\\jb_task\\target\\";
+    private static final String sshSystemFilePath = "target";
     private static final String sshHost = "34.71.206.155";
     private static final String sshPort = "22";
     private static final String sshUser = "dyadkinm";
     private static final String sshPrivateKey = "C:\\Users\\Dyadkin Maxim\\.ssh\\id_ed25519";
 
     public static void main(String[] args) {
-        IFile source = new LocalFile(new File(sourceDir));
-        IFile localTarget = new LocalFile(new File(targetDir));
-        IFile sshTarget = new SSHFile(
-                sshHost, sshPort, sshUser, sshPrivateKey,
-                new FileSystemFile("target"));
+        Map<String, String> sourceParams = new HashMap<>();
+        sourceParams.put("filePath", sourceDir);
 
+        Map<String, String> localTargetParams = new HashMap<>();
+        localTargetParams.put("filePath", targetDir);
+
+        Map<String, String> sshTargetParams = new HashMap<>();
+        sshTargetParams.put("host", sshHost);
+        sshTargetParams.put("port", sshPort);
+        sshTargetParams.put("username", sshUser);
+        sshTargetParams.put("privateKeyPath", sshPrivateKey);
+        sshTargetParams.put("systemFilePath", sshSystemFilePath);
+
+        IFile source = FileFactory.create(FileType.LOCAL, sourceParams);
+        IFile sshTarget = FileFactory.create(FileType.SSH, sshTargetParams);
+        IFile localTarget = FileFactory.create(FileType.LOCAL, localTargetParams);
 //        var localScheduler = new LocalScheduler();
 //        localScheduler.localSchedule(source, sshTargetFile, sshFileManager);
         try {

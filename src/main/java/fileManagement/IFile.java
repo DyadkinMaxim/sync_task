@@ -6,7 +6,9 @@ import java.nio.file.Path;
 
 public interface IFile {
 
-    File getFile();
+    void build();
+
+    File getSystemFile();
 
     boolean exists();
 

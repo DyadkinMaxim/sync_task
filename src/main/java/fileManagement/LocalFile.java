@@ -18,7 +18,12 @@ public class LocalFile implements IFile {
     private File file;
 
     @Override
-    public File getFile() {
+    public void build() {
+        System.out.println("Build LocalFile");
+    }
+
+    @Override
+    public File getSystemFile() {
         return file;
     }
 

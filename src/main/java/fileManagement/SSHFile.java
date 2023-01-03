@@ -25,11 +25,15 @@ public class SSHFile implements IFile {
     private String sftpPort;
     private String sshUser;
     private String sshPrivateKey;
-    private FileSystemFile file;
+    private FileSystemFile systemFile;
 
     @Override
-    public File getFile() {
-        return file.getFile();
+    public void build() {
+        System.out.println("Build Motorcycle");
+    }
+
+    public File getSystemFile() {
+        return systemFile.getFile();
     }
 
     @Override
@@ -88,7 +92,7 @@ public class SSHFile implements IFile {
                 final Session session = client.startSession();
                 final SFTPClient sftp = client.newSFTPClient();
                 try {
-                    canonicalPath = sftp.canonicalize(file.getFile().getPath());
+                    canonicalPath = sftp.canonicalize(systemFile.getFile().getPath());
                 } finally {
                     sftp.close();
                     session.close();
@@ -117,7 +121,7 @@ public class SSHFile implements IFile {
                 final Session session = client.startSession();
                 final SFTPClient sftp = client.newSFTPClient();
                 try {
-                    System.out.println("Listing started for file " + file.getName());
+                    System.out.println("Listing started for file " + systemFile.getName());
                     var path = toPath().toString();
                     var pathForwardSlashes = path.replaceAll("\\\\", "/");
                     for (var file : sftp.ls(pathForwardSlashes)) {
@@ -154,7 +158,7 @@ public class SSHFile implements IFile {
     @Override
     public IFile getChild(String child) {
         return new SSHFile(sshHost, sftpPort, sshUser, sshPrivateKey,
-                new FileSystemFile(new File(file.getFile(), child)));
+                new FileSystemFile(new File(systemFile.getFile(), child)));
     }
 
     private FileAttributes getAttrs() {
@@ -182,7 +186,7 @@ public class SSHFile implements IFile {
                 client.disconnect();
             }
         } finally {
-            System.out.println("Attributes found for " + file.getName());
+            System.out.println("Attributes found for " + systemFile.getName());
             return attrs;
         }
     }
