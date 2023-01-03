@@ -1,17 +1,15 @@
-package local;
+package monitor;
 
-import fileManagement.FileManager;
-import fileManagement.TargetFile;
-import java.io.File;
+import core.SyncImpl;
+import fileManagement.IFile;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
-public class LocalTargetValidator implements Runnable {
+public class TargetMonitor implements Runnable {
 
-    private final File source;
-    private final TargetFile target;
-    private final FileManager fm;
+    private final IFile source;
+    private final IFile target;
 
     @Override
     public void run() {
@@ -19,7 +17,7 @@ public class LocalTargetValidator implements Runnable {
         if (target.lastModified() > 30000) {
             var sync = new SyncImpl();
             try {
-                sync.synchronize(source, target, fm);
+                sync.synchronize(source, target);
             } catch (Exception e) {
                 e.printStackTrace();
             }

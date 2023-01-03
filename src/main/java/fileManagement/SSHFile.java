@@ -1,7 +1,7 @@
 package fileManagement;
 
-import java.io.Console;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import lombok.AllArgsConstructor;
@@ -19,10 +19,8 @@ import net.schmizz.sshj.xfer.FileSystemFile;
 @AllArgsConstructor
 @Getter
 @Setter
-public class SSHTargetFile implements TargetFile {
+public class SSHFile implements IFile {
 
-    private String loadDirectory;
-    private String targetPath;
     private String sshHost;
     private String sftpPort;
     private String sshUser;
@@ -154,9 +152,8 @@ public class SSHTargetFile implements TargetFile {
     }
 
     @Override
-    public TargetFile getChild(String child) {
-        return new SSHTargetFile(loadDirectory,
-        targetPath, sshHost, sftpPort, sshUser, sshPrivateKey,
+    public IFile getChild(String child) {
+        return new SSHFile(sshHost, sftpPort, sshUser, sshPrivateKey,
                 new FileSystemFile(new File(file.getFile(), child)));
     }
 
@@ -187,6 +184,77 @@ public class SSHTargetFile implements TargetFile {
         } finally {
             System.out.println("Attributes found for " + file.getName());
             return attrs;
+        }
+    }
+
+    @Override
+    public void copyFile(IFile source) throws IOException {
+        System.out.println("Started copy for "+ source.getCanonicalPath());
+        SSHClient client = new SSHClient();
+        client.addHostKeyVerifier(new PromiscuousVerifier());
+        String username = sshUser;
+        File privateKey = new File(sshPrivateKey);
+        KeyProvider keys = client.loadKeys(privateKey.getPath());
+        client.connect(sshHost);
+        try {
+            client.authPublickey(username, keys);
+            final Session session = client.startSession();
+            try {
+                client.useCompression();
+                var initialTarget = getCanonicalPath();
+                var validatedTarget = initialTarget.replaceAll("\\\\", "/");
+                client.newSCPFileTransfer().upload(source.getCanonicalPath(), validatedTarget);
+                System.out.println("Uploaded file:" + source.getCanonicalPath());
+            } finally {
+                session.close();
+            }
+        } finally {
+            client.disconnect();
+        }
+    }
+
+    @Override
+    public void delete() throws IOException {
+        SSHClient client = new SSHClient();
+        client.addHostKeyVerifier(new PromiscuousVerifier());
+        String username = sshUser;
+        File privateKey = new File(sshPrivateKey);
+        KeyProvider keys = client.loadKeys(privateKey.getPath());
+        client.connect(sshHost);
+        try {
+            client.authPublickey(username, keys);
+            final Session session = client.startSession();
+            final SFTPClient sftp = client.newSFTPClient();
+            try {
+                delete(this, sftp);
+            } finally {
+                sftp.close();
+                session.close();
+            }
+        } finally {
+            client.disconnect();
+        }
+    }
+
+    private void delete(IFile fileForDelete, SFTPClient sftp) throws IOException {
+        var initialPath = fileForDelete.getCanonicalPath();
+        var validatedPath = initialPath.replaceAll("\\\\", "/");
+        if (fileForDelete.isDirectory()) {
+            if (fileForDelete.list().length == 0) {
+                sftp.rmdir(validatedPath);
+                System.out.println("Deleted directory : " + fileForDelete.getCanonicalPath());
+            } else {
+                var files = fileForDelete.list();
+                for (var temp : files) {
+                    delete(fileForDelete.getChild(temp), sftp);
+                }
+                if (fileForDelete.list().length == 0) {
+                    delete(fileForDelete, sftp);
+                }
+            }
+        } else {
+            sftp.rm(validatedPath);
+            System.out.println("Deleted fileForDelete  : " + fileForDelete.getCanonicalPath());
         }
     }
 }

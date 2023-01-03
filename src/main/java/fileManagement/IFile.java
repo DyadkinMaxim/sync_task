@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public interface  TargetFile {
+public interface IFile {
 
     File getFile();
 
@@ -24,5 +24,9 @@ public interface  TargetFile {
 
     Path toPath();
 
-    TargetFile getChild(String child);
+    IFile getChild(String child);
+
+    void copyFile(IFile source) throws IOException;
+
+    void delete() throws IOException;
 }

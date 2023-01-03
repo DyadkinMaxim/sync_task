@@ -1,8 +1,6 @@
-package local;
+package core;
 
-import fileManagement.FileManager;
-import fileManagement.TargetFile;
-import java.io.File;
+import fileManagement.IFile;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,7 +14,7 @@ public class SyncImpl implements Sync {
     private static boolean globalPause = false;
 
     @Override
-    public synchronized void synchronize(File source, TargetFile target, FileManager fm) throws IOException {
+    public synchronized void synchronize(IFile source, IFile target) throws IOException {
         System.out.println("Sync started");
         if (source.isDirectory()) {
             if (!target.exists()) {
@@ -36,34 +34,34 @@ public class SyncImpl implements Sync {
             //delete files not present in source
             for (String fileName : targets) {
                 if (!srcNames.contains(fileName)) {
-                    fm.delete(target.getChild(fileName));
+                    target.getChild(fileName).delete();
                 }
             }
             System.out.println("All files not present is source are deleted");
             //copy each file from source
             for (String fileName : sources) {
-                File sourceFile = new File(source, fileName);
-                TargetFile targetFile = target.getChild(fileName);
+                IFile sourceFile = source.getChild(fileName);
+                IFile targetFile = target.getChild(fileName);
                 System.out.println("Sync recursively called for targetfile" + targetFile);
-                synchronize(sourceFile, targetFile, fm);
+                synchronize(sourceFile, targetFile);
             }
         } else {
             if (target.exists() && target.isDirectory()) {
-                fm.delete(target);
+                target.delete();
             }
-            System.out.println("Entered copy section for " + source.getName());
+            System.out.println("Entered copy section for " + source.getCanonicalPath());
             if (target.exists()) {
                 long sts = source.lastModified() / FAT_PRECISION;
                 long dts = target.lastModified() / FAT_PRECISION;
                 //do not copy if smart and same timestamp and same length
                 if (sts == 0 || sts != dts || source.length() != target.length()) {
-                    fm.copyFile(source, target);
+                    target.copyFile(source);
                 }
             } else {
-                fm.copyFile(source, target);
+                target.copyFile(source);
             }
         }
-        System.out.println("Sync successfully finished for "+ target.getCanonicalPath());
+        System.out.println("Sync successfully finished for " + target.getCanonicalPath());
     }
 
     @Override

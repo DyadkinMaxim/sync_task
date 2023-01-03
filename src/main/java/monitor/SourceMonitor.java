@@ -1,8 +1,7 @@
-package local;
+package monitor;
 
-import fileManagement.FileManager;
-import fileManagement.TargetFile;
-import java.io.File;
+import core.SyncImpl;
+import fileManagement.IFile;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,24 +12,24 @@ import java.nio.file.WatchService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class LocalScheduler {
+public class SourceMonitor {
 
-    public void localSchedule(File source, TargetFile target, FileManager fm) {
+    public void localSchedule(IFile source, IFile target) {
         try {
             var scheduler = Executors.newScheduledThreadPool(1);
-            var localTargetValidator = new LocalTargetValidator(
-                    source, target, fm);
+            var localTargetValidator = new TargetMonitor(
+                    source, target);
             scheduler.scheduleAtFixedRate(localTargetValidator, 0, 30, TimeUnit.SECONDS);
-            sourceWatch(source, target, fm);
+            sourceWatch(source, target);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void sourceWatch(File source, TargetFile target, FileManager fm) throws Exception {
+    public void sourceWatch(IFile source, IFile target) throws Exception {
         WatchService watchService
                 = FileSystems.getDefault().newWatchService();
-        Path path = Paths.get(source.getPath());
+        Path path = Paths.get(source.getCanonicalPath());
 
         path.register(
                 watchService,
@@ -42,7 +41,7 @@ public class LocalScheduler {
         var sync = new SyncImpl();
         while ((key = watchService.take()) != null) {
             for (WatchEvent<?> event : key.pollEvents()) {
-                sync.synchronize(source, target, fm);
+                sync.synchronize(source, target);
             }
             key.reset();
         }
