@@ -1,12 +1,14 @@
-package fileManagement;
+package fileManagement.local;
 
+import fileManagement.FileFactory;
+import fileManagement.IFile;
 import java.io.File;
 import java.util.Map;
 
 public class LocalFileFactory extends FileFactory {
 
     @Override
-    protected IFile createFile(Map<String, String> parameters) {
+    public IFile createFile(Map<String, String> parameters) {
         String localPath;
         if(parameters.containsKey("filePath")){
             localPath = parameters.get("filePath");

@@ -1,13 +1,9 @@
 import fileManagement.FileFactory;
 import fileManagement.FileType;
-import fileManagement.LocalFile;
-import fileManagement.SSHFile;
 import fileManagement.IFile;
-import java.io.File;
 import core.SyncImpl;
 import java.util.HashMap;
 import java.util.Map;
-import net.schmizz.sshj.xfer.FileSystemFile;
 
 public class JbTaskApplication {
 
@@ -40,7 +36,7 @@ public class JbTaskApplication {
 //        localScheduler.localSchedule(source, sshTargetFile, sshFileManager);
         try {
            var sync = new SyncImpl();
-           sync.synchronize(source, localTarget);
+           sync.synchronize(source, sshTarget);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,5 +1,7 @@
 package fileManagement;
 
+import fileManagement.local.LocalFileFactory;
+import fileManagement.ssh.SSHFileFactory;
 import java.util.Map;
 
 public abstract class FileFactory {
@@ -17,5 +19,5 @@ public abstract class FileFactory {
         }
         return file;
     }
-    protected abstract IFile createFile(Map<String, String> parameters);
+    public abstract IFile createFile(Map<String, String> parameters);
 }

@@ -6,8 +6,6 @@ import java.nio.file.Path;
 
 public interface IFile {
 
-    void build();
-
     File getSystemFile();
 
     boolean exists();
@@ -30,5 +28,5 @@ public interface IFile {
 
     void copyFile(IFile source) throws IOException;
 
-    void delete() throws IOException;
+    void delete();
 }

@@ -1,5 +1,6 @@
-package fileManagement;
+package fileManagement.local;
 
+import fileManagement.IFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,11 +17,6 @@ import lombok.Setter;
 public class LocalFile implements IFile {
 
     private File file;
-
-    @Override
-    public void build() {
-        System.out.println("Build LocalFile");
-    }
 
     @Override
     public File getSystemFile() {

@@ -1,11 +1,13 @@
-package fileManagement;
+package fileManagement.ssh;
 
+import fileManagement.FileFactory;
+import fileManagement.IFile;
 import java.util.Map;
 import net.schmizz.sshj.xfer.FileSystemFile;
 
 public class SSHFileFactory extends FileFactory {
     @Override
-    protected IFile createFile(Map<String, String> parameters) {
+    public IFile createFile(Map<String, String> parameters) {
         String host;
         String port;
         String username;
@@ -36,6 +38,8 @@ public class SSHFileFactory extends FileFactory {
         } else {
             throw new IllegalArgumentException("No system file path found");
         }
-        return new SSHFile(host, port, username, privateKeyPath, new FileSystemFile(systemFilePath));
+        var sshClientPool = SSHClientPool.create(host, port, username, privateKeyPath);
+        var sftpClientPool = SFTPClientPool.create(sshClientPool);
+        return new SSHFile(sshClientPool, sftpClientPool, new FileSystemFile(systemFilePath));
     }
 }
