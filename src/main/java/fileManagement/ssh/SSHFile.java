@@ -8,19 +8,21 @@ import java.util.ArrayList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.FileAttributes;
 import net.schmizz.sshj.sftp.FileMode;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.xfer.FileSystemFile;
 
+@Slf4j
 @AllArgsConstructor
 @Getter
 @Setter
 public class SSHFile implements IFile {
 
-    private SSHClientPool sshClientPool;
-    private SFTPClientPool sftpClientPool;
+    private SSHClient sshClient;
+    private SFTPClient sftpClient;
     private FileSystemFile systemFile;
 
     public File getSystemFile() {
@@ -34,17 +36,11 @@ public class SSHFile implements IFile {
 
     @Override
     public boolean mkdirs() {
-        SFTPClient sftp = null;
         try {
-            sftp = sftpClientPool.getConnection();
-            var path = toPath().toString();
-            var pathForwardSlashes = path.replaceAll("\\\\", "/");
-            sftp.mkdirs(pathForwardSlashes);
+            sftpClient.mkdirs(forwardSlashPath(this));
             return true;
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        } finally {
-            sftpClientPool.releaseConnection(sftp);
         }
         return false;
     }
@@ -57,35 +53,28 @@ public class SSHFile implements IFile {
     @Override
     public String getCanonicalPath() {
         String canonicalPath = null;
-        SFTPClient sftp = null;
         try {
-            sftp = sftpClientPool.getConnection();
-            canonicalPath = sftp.canonicalize(systemFile.getFile().getPath());
-            ;
+            canonicalPath = sftpClient.canonicalize(systemFile.getFile().getPath());
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        } finally {
-            sftpClientPool.releaseConnection(sftp);
         }
         return canonicalPath;
+    }
+
+    private static String forwardSlashPath(IFile file) {
+        return file.getCanonicalPath().replaceAll("\\\\", "/");
     }
 
     @Override
     public String[] list() {
         var list = new ArrayList<>();
-        SFTPClient sftp = null;
         try {
-            System.out.println("Listing started for file " + systemFile.getName());
-            sftp = sftpClientPool.getConnection();
-            var path = toPath().toString();
-            var pathForwardSlashes = path.replaceAll("\\\\", "/");
-            for (var file : sftp.ls(pathForwardSlashes)) {
+            log.info("Listing started for file " + systemFile.getName());
+            for (var file : sftpClient.ls(forwardSlashPath(this))) {
                 list.add(file.getName());
             }
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        } finally {
-            sftpClientPool.releaseConnection(sftp);
         }
         return list.toArray(new String[list.size()]);
     }
@@ -107,75 +96,54 @@ public class SSHFile implements IFile {
 
     @Override
     public IFile getChild(String child) {
-        return new SSHFile(sshClientPool, sftpClientPool,
+        return new SSHFile(sshClient, sftpClient,
                 new FileSystemFile(new File(systemFile.getFile(), child)));
     }
 
     private FileAttributes getAttrs() {
         FileAttributes attrs = null;
-        SFTPClient sftp = null;
         try {
-            sftp = sftpClientPool.getConnection();
-            var path = toPath().toString();
-            var pathForwardSlashes = path.replaceAll("\\\\", "/");
-            attrs = sftp.statExistence(pathForwardSlashes);
+            attrs = sftpClient.statExistence(forwardSlashPath(this));
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        } finally {
-            sftpClientPool.releaseConnection(sftp);
         }
         return attrs;
     }
 
     @Override
     public void copyFile(IFile source) throws IOException {
-        System.out.println("Started copy for " + source.getCanonicalPath());
-        SSHClient sshClient = null;
-        try {
-            sshClient = sshClientPool.getConnection();
-            sshClient.useCompression();
-            var initialTarget = getCanonicalPath();
-            var validatedTarget = initialTarget.replaceAll("\\\\", "/");
-            sshClient.newSCPFileTransfer().upload(source.getCanonicalPath(), validatedTarget);
-            System.out.println("Uploaded file:" + source.getCanonicalPath());
-        } finally {
-            sshClientPool.releaseConnection(sshClient);
-        }
+        sshClient.useCompression();
+        sshClient.newSCPFileTransfer().upload(source.getCanonicalPath(), forwardSlashPath(this));
+        log.info("Uploaded file:" + source.getCanonicalPath());
     }
 
     @Override
     public void delete() {
-        SFTPClient sftp = null;
         try {
-            sftp = sftpClientPool.getConnection();
-            delete(this, sftp);
+            delete(this, sftpClient);
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
-        } finally {
-            sftpClientPool.releaseConnection(sftp);
         }
     }
 
 
-    private void delete(IFile fileForDelete, SFTPClient sftp) throws IOException {
-        var initialPath = fileForDelete.getCanonicalPath();
-        var validatedPath = initialPath.replaceAll("\\\\", "/");
+    private void delete(IFile fileForDelete, SFTPClient sftpClient) throws IOException {
         if (fileForDelete.isDirectory()) {
             if (fileForDelete.list().length == 0) {
-                sftp.rmdir(validatedPath);
-                System.out.println("Deleted directory : " + fileForDelete.getCanonicalPath());
+                sftpClient.rmdir(forwardSlashPath(fileForDelete));
+                log.info("Deleted directory : " + fileForDelete.getCanonicalPath());
             } else {
                 var files = fileForDelete.list();
                 for (var temp : files) {
-                    delete(fileForDelete.getChild(temp), sftp);
+                    delete(fileForDelete.getChild(temp), sftpClient);
                 }
                 if (fileForDelete.list().length == 0) {
-                    delete(fileForDelete, sftp);
+                    delete(fileForDelete, sftpClient);
                 }
             }
         } else {
-            sftp.rm(validatedPath);
-            System.out.println("Deleted fileForDelete  : " + fileForDelete.getCanonicalPath());
+            sftpClient.rm(forwardSlashPath(fileForDelete));
+            log.info("Deleted file  : " + fileForDelete.getCanonicalPath());
         }
     }
 }

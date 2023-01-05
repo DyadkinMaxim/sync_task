@@ -4,7 +4,9 @@ import core.SyncImpl;
 import fileManagement.IFile;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor
 public class TargetMonitor implements Runnable {
 
@@ -13,8 +15,8 @@ public class TargetMonitor implements Runnable {
 
     @Override
     public void run() {
-        System.out.println(Instant.now() + " " + target.lastModified());
-        if (target.lastModified() > 30000) {
+        log.info("Target scan started: " + target.getCanonicalPath());
+        if (target.lastModified() > 60000) {
             var sync = new SyncImpl();
             try {
                 sync.synchronize(source, target);

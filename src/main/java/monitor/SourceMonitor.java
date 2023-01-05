@@ -9,24 +9,11 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SourceMonitor {
-
-    public void localSchedule(IFile source, IFile target) {
-        try {
-            var scheduler = Executors.newScheduledThreadPool(1);
-            var localTargetValidator = new TargetMonitor(
-                    source, target);
-            scheduler.scheduleAtFixedRate(localTargetValidator, 0, 30, TimeUnit.SECONDS);
-            sourceWatch(source, target);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void sourceWatch(IFile source, IFile target) throws Exception {
+    public static void sourceWatch(IFile source, IFile target) throws Exception {
         WatchService watchService
                 = FileSystems.getDefault().newWatchService();
         Path path = Paths.get(source.getCanonicalPath());
@@ -41,6 +28,7 @@ public class SourceMonitor {
         var sync = new SyncImpl();
         while ((key = watchService.take()) != null) {
             for (WatchEvent<?> event : key.pollEvents()) {
+                log.info("Source sync started: " + source.getCanonicalPath());
                 sync.synchronize(source, target);
             }
             key.reset();

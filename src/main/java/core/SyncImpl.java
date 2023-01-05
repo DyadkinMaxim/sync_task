@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor
 public class SyncImpl implements Sync {
 
@@ -15,7 +17,6 @@ public class SyncImpl implements Sync {
 
     @Override
     public synchronized void synchronize(IFile source, IFile target) throws IOException {
-        System.out.println("Sync started");
         if (source.isDirectory()) {
             if (!target.exists()) {
                 if (!target.mkdirs()) {
@@ -37,23 +38,22 @@ public class SyncImpl implements Sync {
                     target.getChild(fileName).delete();
                 }
             }
-            System.out.println("All files not present is source are deleted");
+            log.debug("All files not present is source are deleted");
             //copy each file from source
             for (String fileName : sources) {
                 IFile sourceFile = source.getChild(fileName);
                 IFile targetFile = target.getChild(fileName);
-                System.out.println("Sync recursively called for targetfile" + targetFile);
+                log.info("Sync recursively called for target file" + targetFile);
                 synchronize(sourceFile, targetFile);
             }
         } else {
             if (target.exists() && target.isDirectory()) {
                 target.delete();
             }
-            System.out.println("Entered copy section for " + source.getCanonicalPath());
             if (target.exists()) {
-                long sts = source.lastModified() / FAT_PRECISION;
-                long dts = target.lastModified() / FAT_PRECISION;
-                //do not copy if smart and same timestamp and same length
+                long sts = source.lastModified() / 1000;
+                long dts = target.lastModified();
+                //do not copy if same timestamp and same length
                 if (sts == 0 || sts != dts || source.length() != target.length()) {
                     target.copyFile(source);
                 }
@@ -61,7 +61,8 @@ public class SyncImpl implements Sync {
                 target.copyFile(source);
             }
         }
-        System.out.println("Sync successfully finished for " + target.getCanonicalPath());
+        log.info(String.format("Sync successfully finished for source: %s, target: %s",
+                source.getCanonicalPath(), target.getCanonicalPath()));
     }
 
     @Override
