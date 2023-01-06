@@ -15,7 +15,7 @@ import lombok.Setter;
 public class Param {
     private final String name;
     private String value;
-    //private Component uiComponent;
+    private Component uiComponent;
 
     public static Param getParam(List<Param> params, String name) throws IOException {
         return params.stream()

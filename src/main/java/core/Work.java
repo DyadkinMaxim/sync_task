@@ -1,20 +1,17 @@
-import core.SyncImpl;
+package core;
+
 import datasource.Datasource;
 import datasource.DatasourceManager;
-import fileManagement.local.LocalDatasource;
 import datasource.Param;
-import fileManagement.ssh.SSHDatasource;
 import fileManagement.IFile;
+import fileManagement.local.LocalDatasource;
+import fileManagement.ssh.SSHDatasource;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
-import monitor.DatasourceMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@Slf4j
+public class Work {
 
-public class JbTaskApplication {
-
-    private static final Logger log = LoggerFactory.getLogger(JbTaskApplication.class);
     private static final String sourceDir = "C:\\Users\\Dyadkin Maxim\\Desktop\\jb_task\\source\\";
     private static final String targetDir = "C:\\Users\\Dyadkin Maxim\\Desktop\\jb_task\\target\\";
     private static final String sshSystemFilePath = "target";
@@ -23,7 +20,7 @@ public class JbTaskApplication {
     private static final String sshUser = "dyadkinm";
     private static final String sshPrivateKey = "C:\\Users\\Dyadkin Maxim\\.ssh\\id_ed25519";
 
-    public static void main(String[] args) {
+    public static void work() {
         log.info("App started");
         DatasourceManager manager = new DatasourceManager();
         manager.add(new SSHDatasource());
@@ -57,7 +54,7 @@ public class JbTaskApplication {
         IFile source = sourceDS.getRoot();
         IFile sshTarget = targetDS.getRoot();
 
-      //DatasourceMonitor.monitor(source, sshTarget);
+        //DatasourceMonitor.monitor(source, sshTarget);
         try {
             var sync = new SyncImpl();
             sync.synchronize(source, sshTarget);
