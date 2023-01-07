@@ -1,7 +1,8 @@
-package fileManagement.local;
+package datasource.local;
 
 import core.Progress;
-import fileManagement.IFile;
+import datasource.base.FileUtils;
+import datasource.base.IFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,22 +56,7 @@ public class LocalFile implements IFile {
 
     @Override
     public long countAll() {
-        var counter = new Counter();
-        getFilesCount(this, counter);
-        return counter.getValue();
-    }
-
-    private void getFilesCount(IFile file, Counter counter) {
-        String[] files = file.list();
-        if (files != null) {
-            for (var child : files) {
-                IFile next = file.getChild(child);
-                counter.setValue(counter.getValue()+1);
-                if (next.isDirectory()) {
-                    getFilesCount(next, counter);
-                }
-            }
-        }
+        return FileUtils.countAll(this);
     }
 
     @Override
@@ -85,7 +71,7 @@ public class LocalFile implements IFile {
 
     @Override
     public long lastModified() {
-        return file.lastModified();
+        return file.lastModified() / 1000; // linux-based systems have lastModified in seconds
     }
 
     @Override
@@ -101,11 +87,18 @@ public class LocalFile implements IFile {
     @Override
     public void copyFile(IFile source) throws IOException {
         Files.copy(source.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        log.debug(String.format("Local copy %s to %s"), source.getCanonicalPath(), getCanonicalPath());
         progress.incrementProgress();
     }
 
     @Override
+    public void setLastModified(long value) {
+       file.setLastModified(value);
+    }
+
+    @Override
     public void delete() {
+        log.debug("Deleting file:" + getCanonicalPath());
         try {
             Files.walk(file.toPath())
                     .sorted(Comparator.reverseOrder())
@@ -122,11 +115,5 @@ public class LocalFile implements IFile {
     @Override
     public void setProgress(Progress progress) {
         this.progress = progress;
-    }
-
-    @Getter
-    @Setter
-    class Counter {
-        private long value;
     }
 }

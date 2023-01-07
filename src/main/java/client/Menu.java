@@ -1,8 +1,8 @@
 package client;
 
-import datasource.DatasourceManager;
-import fileManagement.local.LocalDatasource;
-import fileManagement.ssh.SSHDatasource;
+import datasource.base.DatasourceManager;
+import datasource.local.LocalDatasource;
+import datasource.ssh.SSHDatasource;
 import java.awt.Component;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;

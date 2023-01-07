@@ -1,4 +1,4 @@
-package fileManagement;
+package datasource.base;
 
 import core.Progress;
 import java.io.File;
@@ -30,6 +30,8 @@ public interface IFile {
     IFile getChild(String child);
 
     void copyFile(IFile source) throws IOException;
+
+    void setLastModified(long value);
 
     void delete();
 

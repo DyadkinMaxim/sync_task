@@ -1,13 +1,11 @@
 import core.Progress;
-import core.SyncImpl;
-import datasource.Datasource;
-import datasource.DatasourceManager;
-import fileManagement.local.LocalDatasource;
-import datasource.Param;
-import fileManagement.ssh.SSHDatasource;
-import fileManagement.IFile;
+import datasource.base.Datasource;
+import datasource.base.DatasourceManager;
+import datasource.local.LocalDatasource;
+import datasource.base.Param;
+import datasource.ssh.SSHDatasource;
+import datasource.base.IFile;
 import java.io.IOException;
-import lombok.extern.slf4j.Slf4j;
 import monitor.DatasourceMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,21 +29,13 @@ public class JbTaskApplication {
         manager.add(new LocalDatasource());
 
         var sourceParams = manager.getByName("LOCAL").getConnectionSettings();
-        try {
             Param.getParam(sourceParams, "filePath").setValue(sourceDir);
-        } catch(IOException ex) {
-            System.out.println(ex.getMessage());
-        }
         var sshTargetParams = manager.getByName("SSH").getConnectionSettings();
-        try {
             Param.getParam(sshTargetParams, "host").setValue(sshHost);
             Param.getParam(sshTargetParams, "port").setValue(sshPort);
             Param.getParam(sshTargetParams, "username").setValue(sshUser);
             Param.getParam(sshTargetParams, "privateKeyPath").setValue(sshPrivateKey);
             Param.getParam(sshTargetParams, "systemFilePath").setValue(sshSystemFilePath);
-        } catch(IOException ex) {
-            System.out.println(ex.getMessage());
-        }
 
         Datasource sourceDS = manager.getByName("LOCAL");
         Datasource targetDS = manager.getByName("SSH");
@@ -57,7 +47,9 @@ public class JbTaskApplication {
         }
         IFile source = sourceDS.getRoot();
         IFile sshTarget = targetDS.getRoot();
-        var progress = Progress.initProgress(source, sshTarget);
+        var progress = new Progress(source, sshTarget);
+        source.setProgress(progress);
+        sshTarget.setProgress(progress);
       DatasourceMonitor.monitor(source, sshTarget, progress);
 //        try {
 //            var progress = Progress.initProgress(source, sshTarget);

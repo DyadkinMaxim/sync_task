@@ -1,21 +1,5 @@
 package client;
 
-import datasource.Datasource;
-import datasource.DatasourceManager;
-import datasource.Param;
-import java.awt.Component;
-import java.awt.SystemColor;
-import java.util.List;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileSystemView;
-
 public class Configuration {
 //
 //    public void method(Datasource datasource) {

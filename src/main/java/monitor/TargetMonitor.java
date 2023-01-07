@@ -2,7 +2,7 @@ package monitor;
 
 import core.Progress;
 import core.SyncImpl;
-import fileManagement.IFile;
+import datasource.base.IFile;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,15 +16,15 @@ public class TargetMonitor implements Runnable {
 
     @Override
     public void run() {
-        log.info("Target scan started: " + target.getCanonicalPath());
-        if (target.lastModified() > 60000) {
-            var sync = new SyncImpl();
-            try {
+        var sync = new SyncImpl();
+        try {
+            if (source.lastModified() != target.lastModified()
+                    || source.length() != target.length()) {
+                log.info("Target-side sync started: " + target.getCanonicalPath());
                 sync.synchronize(source, target, progress);
-                progress = Progress.initProgress(source, target);
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

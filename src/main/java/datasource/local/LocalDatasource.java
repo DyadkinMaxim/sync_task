@@ -1,8 +1,8 @@
-package fileManagement.local;
+package datasource.local;
 
-import datasource.Datasource;
-import datasource.Param;
-import fileManagement.IFile;
+import datasource.base.Datasource;
+import datasource.base.IFile;
+import datasource.base.Param;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

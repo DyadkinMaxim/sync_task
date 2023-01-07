@@ -2,7 +2,7 @@ package monitor;
 
 import core.Progress;
 import core.SyncImpl;
-import fileManagement.IFile;
+import datasource.base.IFile;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,9 +29,8 @@ public class SourceMonitor {
         var sync = new SyncImpl();
         while ((key = watchService.take()) != null) {
             for (WatchEvent<?> event : key.pollEvents()) {
-                log.info("Source sync started: " + source.getCanonicalPath());
+                log.info("Source-event sync started: " + source.getCanonicalPath());
                 sync.synchronize(source, target, progress);
-                progress = Progress.initProgress(source, target);
             }
             key.reset();
         }

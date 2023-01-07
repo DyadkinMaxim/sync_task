@@ -15,7 +15,7 @@ public class PauseResume {
     private JTextArea textArea = new JTextArea(5, 20);
     JLabel inProgresslabel = new JLabel("Sync in progress...");
 
-    private Object lock = new Object();
+    private final Object lock = new Object();
     private volatile boolean paused = true;
 
     public static void main(String[] args) {
@@ -56,7 +56,7 @@ public class PauseResume {
                 try {
                     lock.wait();
                 } catch (InterruptedException ex) {
-                    log.info(ex.getMessage());
+                    log.error(ex.getMessage());
                 }
             }
         }
@@ -78,7 +78,7 @@ public class PauseResume {
         try {
             Thread.sleep(500);
         } catch (InterruptedException ex) {
-            log.info(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 

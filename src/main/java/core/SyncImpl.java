@@ -1,6 +1,6 @@
 package core;
 
-import fileManagement.IFile;
+import datasource.base.IFile;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,6 +16,7 @@ public class SyncImpl implements Sync {
 
     @Override
     public synchronized void synchronize(IFile source, IFile target, Progress progress) throws IOException {
+        log.debug("Sync started for source "  + source.getCanonicalPath());
         if (source.isDirectory()) {
             validateTarget(source, target, progress);
             String[] sources = source.list();
@@ -35,7 +36,8 @@ public class SyncImpl implements Sync {
             for (String fileName : sources) {
                 IFile sourceFile = source.getChild(fileName);
                 IFile targetFile = target.getChild(fileName);
-                log.info("Sync  called for target file " + targetFile.getCanonicalPath());
+                log.debug(String.format("Sync called for: ",
+                        sourceFile.getCanonicalPath(), target.getCanonicalPath()));
                 synchronize(sourceFile, targetFile, progress);
             }
         } else {
@@ -43,19 +45,22 @@ public class SyncImpl implements Sync {
                 target.delete();
             }
             if (target.exists()) {
-                long sts = source.lastModified() / 1000;
-                long dts = target.lastModified();
+                long sourceLM = source.lastModified();
+                long targetLM = target.lastModified();
                 //do not copy if same timestamp and same length
-                if (sts == 0 || sts != dts || source.length() != target.length()) {
+                if (sourceLM != targetLM || source.length() != target.length()) {
                     target.copyFile(source);
+                    source.setLastModified(target.lastModified());
+                    // todo local DB for
                 } else {
                     progress.incrementProgress();
                 }
             } else {
                 target.copyFile(source);
+                source.setLastModified(target.lastModified());
             }
         }
-        log.info(String.format("Sync successfully finished for source: %s, target: %s",
+        log.debug(String.format("Sync successfully finished for source: %s, target: %s",
                 source.getCanonicalPath(), target.getCanonicalPath()));
     }
 

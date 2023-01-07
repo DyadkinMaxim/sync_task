@@ -1,10 +1,9 @@
-package datasource;
+package datasource.base;
 
 import java.awt.Component;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import lombok.AllArgsConstructor;
+import javax.annotation.Nullable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -17,10 +16,16 @@ public class Param {
     private String value;
     private Component uiComponent;
 
-    public static Param getParam(List<Param> params, String name) throws IOException {
+    /**
+     * Returns param from settings list of datasource params
+     *
+     * @return      param with the particular name
+     */
+    @Nullable
+    public static Param getParam(List<Param> params, String name) {
         return params.stream()
                 .filter(p -> Objects.equals(p.getName(), name))
                 .findFirst()
-                .orElseThrow(() -> new IOException("No param found with name: " + name));
+                .orElseThrow(null);
     }
 }

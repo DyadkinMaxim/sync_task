@@ -1,6 +1,6 @@
 package core;
 
-import fileManagement.IFile;
+import datasource.base.IFile;
 import java.io.IOException;
 
 public interface Sync {

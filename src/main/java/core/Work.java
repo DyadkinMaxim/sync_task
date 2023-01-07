@@ -1,11 +1,11 @@
 package core;
 
-import datasource.Datasource;
-import datasource.DatasourceManager;
-import datasource.Param;
-import fileManagement.IFile;
-import fileManagement.local.LocalDatasource;
-import fileManagement.ssh.SSHDatasource;
+import datasource.base.Datasource;
+import datasource.base.DatasourceManager;
+import datasource.base.Param;
+import datasource.base.IFile;
+import datasource.local.LocalDatasource;
+import datasource.ssh.SSHDatasource;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,21 +27,13 @@ public class Work {
         manager.add(new LocalDatasource());
 
         var sourceParams = manager.getByName("LOCAL").getConnectionSettings();
-        try {
             Param.getParam(sourceParams, "filePath").setValue(sourceDir);
-        } catch(IOException ex) {
-            System.out.println(ex.getMessage());
-        }
         var sshTargetParams = manager.getByName("SSH").getConnectionSettings();
-        try {
             Param.getParam(sshTargetParams, "host").setValue(sshHost);
             Param.getParam(sshTargetParams, "port").setValue(sshPort);
             Param.getParam(sshTargetParams, "username").setValue(sshUser);
             Param.getParam(sshTargetParams, "privateKeyPath").setValue(sshPrivateKey);
             Param.getParam(sshTargetParams, "systemFilePath").setValue(sshSystemFilePath);
-        } catch(IOException ex) {
-            System.out.println(ex.getMessage());
-        }
 
         Datasource sourceDS = manager.getByName("LOCAL");
         Datasource targetDS = manager.getByName("SSH");
@@ -56,7 +48,7 @@ public class Work {
 
         //DatasourceMonitor.monitor(source, sshTarget);
         try {
-            var progress = Progress.initProgress(source, sshTarget);
+            var progress = new Progress(source, sshTarget);
             source.setProgress(progress);
             sshTarget.setProgress(progress);
             var sync = new SyncImpl();

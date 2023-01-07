@@ -1,19 +1,23 @@
-package fileManagement.ssh;
+package datasource.ssh;
 
-import datasource.Datasource;
-import datasource.Param;
-import fileManagement.IFile;
+import datasource.base.Datasource;
+import datasource.base.Param;
+import datasource.base.IFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.xfer.FileSystemFile;
 
+@Slf4j
 public class SSHDatasource implements Datasource {
 
     private final String datasourceName = "SSH";
@@ -47,6 +51,9 @@ public class SSHDatasource implements Datasource {
         systemFilePath = Param.getParam(params, "systemFilePath").getValue();
         sshClient = createSSHClient(host, port, username, privateKeyPath);
         sftpClient = sshClient.newSFTPClient();
+        log.debug(String.format("SSH connection established for" +
+                "host: %s, port: %s, user: %s, privateKey: %s, filePath: %s",
+                host, port, username, privateKeyPath, systemFilePath));
         isInitialized = true;
     }
 
@@ -56,6 +63,7 @@ public class SSHDatasource implements Datasource {
         sshClient.close();
         sftpClient.close();
         isInitialized = false;
+        log.debug("SSH connection disabled");
     }
 
     @Override
@@ -92,6 +100,7 @@ public class SSHDatasource implements Datasource {
                                     "host: %s, port: %s, user: %s, keyPath: %s.",
                             sshHost, sshPort, sshUser, sshPrivateKey));
         }
+        log.debug("SSH client is created successfully");
         return client;
     }
 }

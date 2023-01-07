@@ -1,9 +1,11 @@
-package datasource;
+package datasource.base;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DatasourceManager {
     public final List<Datasource> datasources = new ArrayList<>();
 
@@ -12,6 +14,7 @@ public class DatasourceManager {
             throw new IllegalArgumentException("Datasource already exists: "+ datasource.getName());
         }
         datasources.add(datasource);
+        log.debug(datasource.getName() + " added");
     }
 
     public List<String> getNames() {
