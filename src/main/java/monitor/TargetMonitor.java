@@ -1,8 +1,8 @@
 package monitor;
 
+import core.Progress;
 import core.SyncImpl;
 import fileManagement.IFile;
-import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,6 +12,7 @@ public class TargetMonitor implements Runnable {
 
     private final IFile source;
     private final IFile target;
+    private Progress progress;
 
     @Override
     public void run() {
@@ -19,7 +20,8 @@ public class TargetMonitor implements Runnable {
         if (target.lastModified() > 60000) {
             var sync = new SyncImpl();
             try {
-                sync.synchronize(source, target);
+                sync.synchronize(source, target, progress);
+                progress = Progress.initProgress(source, target);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -12,22 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public class SyncImpl implements Sync {
 
-    private static final int FAT_PRECISION = 2000;
     private static boolean globalPause = false;
 
     @Override
-    public synchronized void synchronize(IFile source, IFile target) throws IOException {
+    public synchronized void synchronize(IFile source, IFile target, Progress progress) throws IOException {
         if (source.isDirectory()) {
-            if (!target.exists()) {
-                if (!target.mkdirs()) {
-                    throw new IOException("Could not create path " + target);
-                }
-            } else if (!target.isDirectory()) {
-                throw new IOException(
-                        "Source and Destination not of the same type:"
-                                + source.getCanonicalPath() + " , " + target.getCanonicalPath()
-                );
-            }
+            validateTarget(source, target, progress);
             String[] sources = source.list();
             Set<String> srcNames = new HashSet<>(Arrays.asList(sources));
             String[] targets = target.list();
@@ -36,6 +26,8 @@ public class SyncImpl implements Sync {
             for (String fileName : targets) {
                 if (!srcNames.contains(fileName)) {
                     target.getChild(fileName).delete();
+                } else {
+                    progress.incrementProgress();
                 }
             }
             log.debug("All files not present is source are deleted");
@@ -43,8 +35,8 @@ public class SyncImpl implements Sync {
             for (String fileName : sources) {
                 IFile sourceFile = source.getChild(fileName);
                 IFile targetFile = target.getChild(fileName);
-                log.info("Sync recursively called for target file" + targetFile);
-                synchronize(sourceFile, targetFile);
+                log.info("Sync  called for target file " + targetFile.getCanonicalPath());
+                synchronize(sourceFile, targetFile, progress);
             }
         } else {
             if (target.exists() && target.isDirectory()) {
@@ -56,6 +48,8 @@ public class SyncImpl implements Sync {
                 //do not copy if same timestamp and same length
                 if (sts == 0 || sts != dts || source.length() != target.length()) {
                     target.copyFile(source);
+                } else {
+                    progress.incrementProgress();
                 }
             } else {
                 target.copyFile(source);
@@ -63,6 +57,20 @@ public class SyncImpl implements Sync {
         }
         log.info(String.format("Sync successfully finished for source: %s, target: %s",
                 source.getCanonicalPath(), target.getCanonicalPath()));
+    }
+
+    private void validateTarget(IFile source, IFile target, Progress progress) throws IOException {
+        if (!target.exists()) {
+            if (!target.mkdirs()) {
+                throw new IOException("Could not create path " + target);
+            }
+        } else if (!target.isDirectory()) {
+            throw new IOException(
+                    "Source and Destination not of the same type:"
+                            + source.getCanonicalPath() + " , " + target.getCanonicalPath()
+            );
+        }
+            progress.incrementProgress();
     }
 
     @Override

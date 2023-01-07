@@ -56,8 +56,11 @@ public class Work {
 
         //DatasourceMonitor.monitor(source, sshTarget);
         try {
+            var progress = Progress.initProgress(source, sshTarget);
+            source.setProgress(progress);
+            sshTarget.setProgress(progress);
             var sync = new SyncImpl();
-            sync.synchronize(source, sshTarget);
+            sync.synchronize(source, sshTarget, progress);
             sourceDS.disconnect();
             targetDS.disconnect();
             log.info(String.format("Datasources disconnected: source - %s, target - %s",

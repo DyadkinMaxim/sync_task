@@ -1,5 +1,6 @@
 package monitor;
 
+import core.Progress;
 import core.SyncImpl;
 import fileManagement.IFile;
 import java.nio.file.FileSystems;
@@ -13,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SourceMonitor {
-    public static void sourceWatch(IFile source, IFile target) throws Exception {
+    public static void sourceWatch(IFile source, IFile target, Progress progress) throws Exception {
         WatchService watchService
                 = FileSystems.getDefault().newWatchService();
         Path path = Paths.get(source.getCanonicalPath());
@@ -29,7 +30,8 @@ public class SourceMonitor {
         while ((key = watchService.take()) != null) {
             for (WatchEvent<?> event : key.pollEvents()) {
                 log.info("Source sync started: " + source.getCanonicalPath());
-                sync.synchronize(source, target);
+                sync.synchronize(source, target, progress);
+                progress = Progress.initProgress(source, target);
             }
             key.reset();
         }

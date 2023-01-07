@@ -66,7 +66,7 @@ public class SSHDatasource implements Datasource {
     @Override
     public IFile getRoot() {
         ensureInitializedOrThrow();
-        return new SSHFile(sshClient, sftpClient, new FileSystemFile(systemFilePath));
+        return new SSHFile(sshClient, sftpClient, new FileSystemFile(systemFilePath), null);
     }
 
     protected final void ensureInitializedOrThrow() throws IllegalStateException{

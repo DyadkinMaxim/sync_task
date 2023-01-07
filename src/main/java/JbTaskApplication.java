@@ -1,3 +1,4 @@
+import core.Progress;
 import core.SyncImpl;
 import datasource.Datasource;
 import datasource.DatasourceManager;
@@ -56,18 +57,21 @@ public class JbTaskApplication {
         }
         IFile source = sourceDS.getRoot();
         IFile sshTarget = targetDS.getRoot();
+        var progress = Progress.initProgress(source, sshTarget);
+      DatasourceMonitor.monitor(source, sshTarget, progress);
+//        try {
+//            var progress = Progress.initProgress(source, sshTarget);
+//            source.setProgress(progress);
+//            sshTarget.setProgress(progress);
+//            var sync = new SyncImpl();
+//            sync.synchronize(source, sshTarget, progress);
+//            sourceDS.disconnect();
+//            targetDS.disconnect();
+//            log.info(String.format("Datasources disconnected: source - %s, target - %s",
+//                    sourceDS.getName(), targetDS.getName()));
 
-      //DatasourceMonitor.monitor(source, sshTarget);
-        try {
-            var sync = new SyncImpl();
-            sync.synchronize(source, sshTarget);
-            sourceDS.disconnect();
-            targetDS.disconnect();
-            log.info(String.format("Datasources disconnected: source - %s, target - %s",
-                    sourceDS.getName(), targetDS.getName()));
-
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
+//        } catch (IOException ex) {
+//            System.out.println(ex.getMessage());
+//        }
     }
 }

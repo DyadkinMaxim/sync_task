@@ -1,6 +1,8 @@
 package fileManagement.ssh;
 
+import core.Progress;
 import fileManagement.IFile;
+import fileManagement.local.LocalFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -24,6 +26,7 @@ public class SSHFile implements IFile {
     private SSHClient sshClient;
     private SFTPClient sftpClient;
     private FileSystemFile systemFile;
+    private Progress progress;
 
     public File getSystemFile() {
         return systemFile.getFile();
@@ -66,6 +69,26 @@ public class SSHFile implements IFile {
     }
 
     @Override
+    public long countAll() {
+        var counter = new Counter();
+        getFilesCount(this, counter);
+        return counter.getValue();
+    }
+
+    private void getFilesCount(IFile file, Counter counter) {
+        String[] files = file.list();
+        if (files != null) {
+            for (var child : files) {
+                IFile next = file.getChild(child);
+                counter.setValue(counter.getValue()+1);
+                if (next.isDirectory()) {
+                    getFilesCount(next, counter);
+                }
+            }
+        }
+    }
+
+    @Override
     public String[] list() {
         var list = new ArrayList<>();
         try {
@@ -97,7 +120,7 @@ public class SSHFile implements IFile {
     @Override
     public IFile getChild(String child) {
         return new SSHFile(sshClient, sftpClient,
-                new FileSystemFile(new File(systemFile.getFile(), child)));
+                new FileSystemFile(new File(systemFile.getFile(), child)), progress);
     }
 
     private FileAttributes getAttrs() {
@@ -114,6 +137,7 @@ public class SSHFile implements IFile {
     public void copyFile(IFile source) throws IOException {
         sshClient.useCompression();
         sshClient.newSCPFileTransfer().upload(source.getCanonicalPath(), forwardSlashPath(this));
+        progress.incrementProgress();
         log.info("Uploaded file:" + source.getCanonicalPath());
     }
 
@@ -131,6 +155,7 @@ public class SSHFile implements IFile {
         if (fileForDelete.isDirectory()) {
             if (fileForDelete.list().length == 0) {
                 sftpClient.rmdir(forwardSlashPath(fileForDelete));
+                progress.incrementProgress();
                 log.info("Deleted directory : " + fileForDelete.getCanonicalPath());
             } else {
                 var files = fileForDelete.list();
@@ -143,7 +168,19 @@ public class SSHFile implements IFile {
             }
         } else {
             sftpClient.rm(forwardSlashPath(fileForDelete));
+            progress.incrementProgress();
             log.info("Deleted file  : " + fileForDelete.getCanonicalPath());
         }
+    }
+
+    @Override
+    public void setProgress(Progress progress) {
+        this.progress = progress;
+    }
+
+    @Getter
+    @Setter
+    class Counter {
+        private long value;
     }
 }

@@ -41,6 +41,6 @@ public class LocalDatasource implements Datasource {
 
     @Override
     public IFile getRoot() {
-        return new LocalFile(new File(filePath));
+        return new LocalFile(new File(filePath), null);
     }
 }

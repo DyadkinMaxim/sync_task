@@ -1,5 +1,6 @@
 package fileManagement;
 
+import core.Progress;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,6 +17,8 @@ public interface IFile {
 
     String getCanonicalPath();
 
+    long countAll();
+
     String[] list();
 
     long length();
@@ -29,4 +32,6 @@ public interface IFile {
     void copyFile(IFile source) throws IOException;
 
     void delete();
+
+    void setProgress(Progress progress);
 }
