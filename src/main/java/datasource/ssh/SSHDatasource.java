@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
@@ -18,6 +20,8 @@ import net.schmizz.sshj.xfer.FileSystemFile;
  * Represents operations with SSH datasource
  */
 @Slf4j
+@Getter
+@Setter
 public class SSHDatasource implements Datasource {
 
     private final String DATASOURCE_NAME = "SSH";
@@ -36,7 +40,7 @@ public class SSHDatasource implements Datasource {
         params.add(new Param("systemFilePath"));
         params.add(new Param("username"));
         params.add(new Param("privateKeyPath"));
-        return params;
+        return List.copyOf(params);
     }
 
     @Override
@@ -103,5 +107,14 @@ public class SSHDatasource implements Datasource {
         }
         log.debug("SSH client is created successfully");
         return client;
+    }
+
+    public Datasource copy() {
+        var copy = new SSHDatasource();
+        copy.setSshClient(this.getSshClient());
+        copy.setSftpClient(this.getSftpClient());
+        copy.setSystemFilePath(this.getSystemFilePath());
+        copy.setInitialized(this.isInitialized);
+        return copy;
     }
 }

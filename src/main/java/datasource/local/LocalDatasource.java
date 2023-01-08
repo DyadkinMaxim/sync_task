@@ -9,10 +9,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Represents operations with local file system
  */
+@Getter
+@Setter
 public class LocalDatasource implements Datasource {
 
     private final String DATASOURCE_NAME = "LOCAL";
@@ -22,7 +26,7 @@ public class LocalDatasource implements Datasource {
     public List<Param> getConnectionSettings() {
         List<Param> params = new ArrayList<>();
         params.add(new Param("filePath"));
-        return params;
+        return List.copyOf(params);
     }
 
     @Override
@@ -46,5 +50,11 @@ public class LocalDatasource implements Datasource {
     public IFile getRoot() {
         var newFile = new File(filePath);
         return new LocalFile(newFile, null);
+    }
+
+    public Datasource copy(){
+        var copy = new LocalDatasource();
+        copy.setFilePath(this.getFilePath());
+        return copy;
     }
 }

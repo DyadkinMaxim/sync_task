@@ -16,4 +16,6 @@ public interface Datasource {
     String getName();
 
     IFile getRoot();
+
+    Datasource copy();
 }

@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
  * Abstract factory for operating datasource types
  */
 @Slf4j
-public class DatasourceManager {
+public class DatasourceManager implements Cloneable {
     public final List<Datasource> datasources = new ArrayList<>();
 
     public void add(Datasource datasource) {
@@ -28,9 +28,10 @@ public class DatasourceManager {
     }
 
     public Datasource getByName(String name) {
-        return datasources.stream()
+        var foundDS =  datasources.stream()
                 .filter(o -> o.getName().equals(name))
                 .findFirst()
                 .orElse(null);
+        return foundDS != null ? foundDS.copy() : null;
     }
 }

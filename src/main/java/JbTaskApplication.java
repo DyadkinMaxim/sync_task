@@ -30,6 +30,8 @@ public class JbTaskApplication {
 
         var sourceParams = manager.getByName("LOCAL").getConnectionSettings();
             Param.getParam(sourceParams, "filePath").setValue(sourceDir);
+        var localTargetParams = manager.getByName("LOCAL").getConnectionSettings();
+        Param.getParam(localTargetParams, "filePath").setValue(targetDir);
         var sshTargetParams = manager.getByName("SSH").getConnectionSettings();
             Param.getParam(sshTargetParams, "host").setValue(sshHost);
             Param.getParam(sshTargetParams, "port").setValue(sshPort);
@@ -46,11 +48,11 @@ public class JbTaskApplication {
             System.out.println(ex.getMessage());
         }
         IFile source = sourceDS.getRoot();
-        IFile sshTarget = targetDS.getRoot();
-        var progress = new Progress(source, sshTarget);
+        IFile localTarget = targetDS.getRoot();
+        var progress = new Progress();
         source.setProgress(progress);
-        sshTarget.setProgress(progress);
-      DatasourceMonitor.monitor(source, sshTarget, progress);
+        localTarget.setProgress(progress);
+      DatasourceMonitor.monitor(source, localTarget, progress);
 //        try {
 //            var progress = Progress.initProgress(source, sshTarget);
 //            source.setProgress(progress);

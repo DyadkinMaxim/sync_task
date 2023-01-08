@@ -48,7 +48,7 @@ public class Work {
 
         //DatasourceMonitor.monitor(source, sshTarget);
         try {
-            var progress = new Progress(source, sshTarget);
+            var progress = new Progress();
             source.setProgress(progress);
             sshTarget.setProgress(progress);
             var sync = new SyncImpl();

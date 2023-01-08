@@ -9,13 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 
 /** Represents progress tracking
  */
-@RequiredArgsConstructor
 @Slf4j
 @Getter
 @Setter
 public class Progress {
-    private final IFile source;
-    private final IFile target;
+    private IFile source;
+    private IFile target;
     private long totalFileNumber;
     private volatile AtomicLong processedFileNumber;
     private volatile int progressValue;
