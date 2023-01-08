@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class LocalDatasource implements Datasource {
 
-    private final String datasourceName = "LOCAL";
+    private final String DATASOURCE_NAME = "LOCAL";
     private String filePath;
 
     @Override
@@ -39,7 +39,7 @@ public class LocalDatasource implements Datasource {
 
     @Override
     public String getName() {
-        return datasourceName;
+        return DATASOURCE_NAME;
     }
 
     @Override

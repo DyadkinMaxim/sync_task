@@ -1,9 +1,8 @@
 package monitor;
 
 import core.Progress;
-import datasource.base.FileUtils;
+import core.FileUtils;
 import datasource.base.IFile;
-import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +10,8 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -22,12 +23,12 @@ public class SourceMonitor {
 
     private static final String SOURCE_NAME = "Local";
 
-    public static void sourceWatch(IFile source, IFile target, Progress progress) throws Exception {
+    public static synchronized void sourceWatch(IFile source, IFile target, Progress progress) throws Exception {
         WatchService watchService
                 = FileSystems.getDefault().newWatchService();
-        Path path = Paths.get(source.getCanonicalPath());
+        Path rootPath = Paths.get(source.getCanonicalPath());
 
-        path.register(
+        rootPath.register(
                 watchService,
                 StandardWatchEventKinds.ENTRY_CREATE,
                 StandardWatchEventKinds.ENTRY_DELETE,
@@ -35,13 +36,22 @@ public class SourceMonitor {
 
         WatchKey key;
         while ((key = watchService.take()) != null) {
+            // to handle several events, for example: new folder + rename
+            try{
+                Thread.sleep(1000);
+            } catch(InterruptedException ex) {
+                log.error(ex.getMessage());
+            }
             for (WatchEvent<?> event : key.pollEvents()) {
                 log.info("Watch service triggered: " + event.context());
-                var relativePath = (Path) event.context();
-                var sourceLM = new File(path.resolve(relativePath).toString()).lastModified();
-                log.info("sourceLM: " + event.context() + " lastSync: " + FileUtils.lastSync);
-                if (FileUtils.lastSync != 0 && FileUtils.lastSync > sourceLM) {
+                var sourceLastModified = Instant.now();
+                // To avoid miss sync from Watcher: sourceLastModified - lastSync > 1 second
+                var shiftedSourceLM = sourceLastModified.minus(1, ChronoUnit.SECONDS);
+                if (FileUtils.lastSync != null && shiftedSourceLM.compareTo(FileUtils.lastSync) > 0) {
                     FileUtils.doSync(source, target, progress, SOURCE_NAME);
+                } else {
+                    log.info(String.format("Event %s is ignored - already processed",
+                            rootPath.resolve(event.context().toString())));
                 }
             }
             key.reset();

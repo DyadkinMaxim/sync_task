@@ -20,12 +20,13 @@ import net.schmizz.sshj.xfer.FileSystemFile;
 @Slf4j
 public class SSHDatasource implements Datasource {
 
-    private final String datasourceName = "SSH";
+    private final String DATASOURCE_NAME = "SSH";
+    private final String DEFAULT_PORT = "22";
     private SSHClient sshClient;
     private SFTPClient sftpClient;
     private String systemFilePath;
     private volatile boolean isInitialized;
-    private final String DEFAULT_PORT = "22";
+
 
     @Override
     public List<Param> getConnectionSettings() {
@@ -68,7 +69,7 @@ public class SSHDatasource implements Datasource {
 
     @Override
     public String getName() {
-        return datasourceName;
+        return DATASOURCE_NAME;
     }
 
     @Override

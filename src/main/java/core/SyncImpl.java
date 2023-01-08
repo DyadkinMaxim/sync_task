@@ -26,12 +26,15 @@ public class SyncImpl implements Sync {
      * @param target root directory at first call and subfiles at subsequent calls
      */
     @Override
-    public void synchronize(IFile source, IFile target, Progress progress) throws IOException {
+    public synchronized void synchronize(IFile source, IFile target, Progress progress) throws IOException {
         log.debug("Sync started for source " + source.getCanonicalPath());
         if (source.isDirectory()) {
             validateTarget(source, target, progress);
             String[] sources = source.list();
-            Set<String> srcNames = new HashSet<>(Arrays.asList(sources));
+            Set<String> srcNames = new HashSet<>();
+            if(Arrays.asList(sources) != null) {
+                srcNames = new HashSet<>(Arrays.asList(sources));
+            }
             String[] targets = target.list();
 
             //delete files not present in source

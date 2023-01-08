@@ -1,7 +1,7 @@
 package datasource.ssh;
 
 import core.Progress;
-import datasource.base.FileUtils;
+import core.FileUtils;
 import datasource.base.IFile;
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +63,13 @@ public class SSHFile implements IFile {
     }
 
     private static String forwardSlashPath(IFile file) {
-        return file.getCanonicalPath().replaceAll("\\\\", "/");
+        String prettyPath = "";
+        try {
+            prettyPath = file.getCanonicalPath().replaceAll("\\\\", "/");
+        } catch(NullPointerException ex) {
+            log.debug("Can't find file to revert slashes" );
+        }
+        return prettyPath;
     }
 
     @Override

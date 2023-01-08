@@ -2,7 +2,7 @@ package monitor;
 
 import core.Progress;
 import core.SyncImpl;
-import datasource.base.FileUtils;
+import core.FileUtils;
 import datasource.base.IFile;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +19,7 @@ public class TargetMonitor implements Runnable {
     private final IFile target;
     private Progress progress;
     private static final String TARGET_NAME = "Target";
+    private static boolean isFirst = true;
 
     @Override
     public void run() {
@@ -26,8 +27,9 @@ public class TargetMonitor implements Runnable {
         try {
             var sourceLM = source.getLastModified();
             var targetLM = target.getLastModified();
-            if (sourceLM != targetLM) {
+            if (isFirst || sourceLM != targetLM) {
                 FileUtils.doSync(source, target, progress, TARGET_NAME);
+                isFirst = false;
             }
         } catch (Exception e) {
             e.printStackTrace();

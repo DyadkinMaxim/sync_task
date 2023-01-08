@@ -1,7 +1,7 @@
 package datasource.local;
 
 import core.Progress;
-import datasource.base.FileUtils;
+import core.FileUtils;
 import datasource.base.IFile;
 import java.io.File;
 import java.io.IOException;
