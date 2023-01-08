@@ -1,15 +1,12 @@
 package datasource.ssh;
 
 import datasource.base.Datasource;
-import datasource.base.Param;
 import datasource.base.IFile;
+import datasource.base.Param;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
@@ -17,6 +14,9 @@ import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.xfer.FileSystemFile;
 
+/**
+ * Represents operations with SSH datasource
+ */
 @Slf4j
 public class SSHDatasource implements Datasource {
 
@@ -40,7 +40,7 @@ public class SSHDatasource implements Datasource {
 
     @Override
     public synchronized void connect(List<Param> params) throws IOException {
-        if(isInitialized) {
+        if (isInitialized) {
             throw new IllegalStateException("SSH connection is already initialized");
         }
         var host = Param.getParam(params, "host").getValue();
@@ -52,7 +52,7 @@ public class SSHDatasource implements Datasource {
         sshClient = createSSHClient(host, port, username, privateKeyPath);
         sftpClient = sshClient.newSFTPClient();
         log.debug(String.format("SSH connection established for" +
-                "host: %s, port: %s, user: %s, privateKey: %s, filePath: %s",
+                        "host: %s, port: %s, user: %s, privateKey: %s, filePath: %s",
                 host, port, username, privateKeyPath, systemFilePath));
         isInitialized = true;
     }
@@ -68,7 +68,7 @@ public class SSHDatasource implements Datasource {
 
     @Override
     public String getName() {
-       return datasourceName;
+        return datasourceName;
     }
 
     @Override
@@ -77,8 +77,8 @@ public class SSHDatasource implements Datasource {
         return new SSHFile(sshClient, sftpClient, new FileSystemFile(systemFilePath), null);
     }
 
-    protected final void ensureInitializedOrThrow() throws IllegalStateException{
-        if( !isInitialized ) {
+    protected final void ensureInitializedOrThrow() throws IllegalStateException {
+        if (!isInitialized) {
             throw new IllegalStateException();
         }
     }

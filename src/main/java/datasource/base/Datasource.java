@@ -3,6 +3,9 @@ package datasource.base;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * General behavior of any datasource
+ */
 public interface Datasource {
     List<Param> getConnectionSettings();
 

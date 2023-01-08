@@ -14,9 +14,20 @@ public class SyncImpl implements Sync {
 
     private static boolean globalPause = false;
 
+    /**
+     * Recursive calls from root source and root target
+     * Steps:
+     * 1. Validates target directory structure: create directories if is not present
+     * 2. delete target files, which is not present in source
+     * 3. copy files from source to target if lastModified field is different
+     * Progress tracks like: processed files / total files in source and target
+     *
+     * @param source root directory at first call and subfiles at subsequent calls
+     * @param target root directory at first call and subfiles at subsequent calls
+     */
     @Override
-    public synchronized void synchronize(IFile source, IFile target, Progress progress) throws IOException {
-        log.debug("Sync started for source "  + source.getCanonicalPath());
+    public void synchronize(IFile source, IFile target, Progress progress) throws IOException {
+        log.debug("Sync started for source " + source.getCanonicalPath());
         if (source.isDirectory()) {
             validateTarget(source, target, progress);
             String[] sources = source.list();
@@ -36,7 +47,7 @@ public class SyncImpl implements Sync {
             for (String fileName : sources) {
                 IFile sourceFile = source.getChild(fileName);
                 IFile targetFile = target.getChild(fileName);
-                log.debug(String.format("Sync called for: ",
+                log.debug(String.format("Sync called for: %s and %s",
                         sourceFile.getCanonicalPath(), target.getCanonicalPath()));
                 synchronize(sourceFile, targetFile, progress);
             }
@@ -45,25 +56,25 @@ public class SyncImpl implements Sync {
                 target.delete();
             }
             if (target.exists()) {
-                long sourceLM = source.lastModified();
-                long targetLM = target.lastModified();
+                long sourceLM = source.getLastModified();
+                long targetLM = target.getLastModified();
                 //do not copy if same timestamp and same length
                 if (sourceLM != targetLM || source.length() != target.length()) {
                     target.copyFile(source);
-                    source.setLastModified(target.lastModified());
-                    // todo local DB for
                 } else {
                     progress.incrementProgress();
                 }
             } else {
                 target.copyFile(source);
-                source.setLastModified(target.lastModified());
             }
         }
         log.debug(String.format("Sync successfully finished for source: %s, target: %s",
                 source.getCanonicalPath(), target.getCanonicalPath()));
     }
 
+    /**
+     * Validates target directory structure: create directories if is not present
+     */
     private void validateTarget(IFile source, IFile target, Progress progress) throws IOException {
         if (!target.exists()) {
             if (!target.mkdirs()) {
@@ -75,7 +86,7 @@ public class SyncImpl implements Sync {
                             + source.getCanonicalPath() + " , " + target.getCanonicalPath()
             );
         }
-            progress.incrementProgress();
+        progress.incrementProgress();
     }
 
     @Override

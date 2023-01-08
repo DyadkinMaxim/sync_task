@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
+
+/**
+ * Abstract factory for operating datasource types
+ */
 @Slf4j
 public class DatasourceManager {
     public final List<Datasource> datasources = new ArrayList<>();

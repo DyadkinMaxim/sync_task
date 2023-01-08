@@ -1,8 +1,9 @@
 package monitor;
 
 import core.Progress;
-import core.SyncImpl;
+import datasource.base.FileUtils;
 import datasource.base.IFile;
+import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,8 +13,15 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Instant monitoring of source directory,
+ * Calls sync if source directory has been modified by user
+ */
 @Slf4j
 public class SourceMonitor {
+
+    private static final String SOURCE_NAME = "Local";
+
     public static void sourceWatch(IFile source, IFile target, Progress progress) throws Exception {
         WatchService watchService
                 = FileSystems.getDefault().newWatchService();
@@ -26,11 +34,15 @@ public class SourceMonitor {
                 StandardWatchEventKinds.ENTRY_MODIFY);
 
         WatchKey key;
-        var sync = new SyncImpl();
         while ((key = watchService.take()) != null) {
             for (WatchEvent<?> event : key.pollEvents()) {
-                log.info("Source-event sync started: " + source.getCanonicalPath());
-                sync.synchronize(source, target, progress);
+                log.info("Watch service triggered: " + event.context());
+                var relativePath = (Path) event.context();
+                var sourceLM = new File(path.resolve(relativePath).toString()).lastModified();
+                log.info("sourceLM: " + event.context() + " lastSync: " + FileUtils.lastSync);
+                if (FileUtils.lastSync != 0 && FileUtils.lastSync > sourceLM) {
+                    FileUtils.doSync(source, target, progress, SOURCE_NAME);
+                }
             }
             key.reset();
         }

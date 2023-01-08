@@ -10,6 +10,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents operations with local file system
+ */
 public class LocalDatasource implements Datasource {
 
     private final String datasourceName = "LOCAL";
@@ -41,6 +44,7 @@ public class LocalDatasource implements Datasource {
 
     @Override
     public IFile getRoot() {
-        return new LocalFile(new File(filePath), null);
+        var newFile = new File(filePath);
+        return new LocalFile(newFile, null);
     }
 }

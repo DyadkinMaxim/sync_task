@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents single parameter of datasource configuration(like filePath, host, port etc.)
+ */
 @RequiredArgsConstructor
 @Getter
 @Setter
@@ -16,11 +19,6 @@ public class Param {
     private String value;
     private Component uiComponent;
 
-    /**
-     * Returns param from settings list of datasource params
-     *
-     * @return      param with the particular name
-     */
     @Nullable
     public static Param getParam(List<Param> params, String name) {
         return params.stream()

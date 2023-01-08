@@ -10,23 +10,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
-@Getter
-@Setter
 @Slf4j
 public class LocalFile implements IFile {
 
     private File file;
     private Progress progress;
-
-    @Override
-    public File getSystemFile() {
-        return file;
-    }
 
     @Override
     public boolean exists() {
@@ -70,8 +61,12 @@ public class LocalFile implements IFile {
     }
 
     @Override
-    public long lastModified() {
-        return file.lastModified() / 1000; // linux-based systems have lastModified in seconds
+    public long getLastModified() {
+        return file.lastModified();
+    }
+
+    public void setLastModified(long value) {
+        file.setLastModified(value);
     }
 
     @Override
@@ -87,13 +82,9 @@ public class LocalFile implements IFile {
     @Override
     public void copyFile(IFile source) throws IOException {
         Files.copy(source.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        log.debug(String.format("Local copy %s to %s"), source.getCanonicalPath(), getCanonicalPath());
+        log.debug(String.format("Local copy %s to %s", source.getCanonicalPath(), getCanonicalPath()));
+        source.setLastModified(getLastModified());
         progress.incrementProgress();
-    }
-
-    @Override
-    public void setLastModified(long value) {
-       file.setLastModified(value);
     }
 
     @Override

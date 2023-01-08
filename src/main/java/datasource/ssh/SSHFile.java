@@ -28,10 +28,6 @@ public class SSHFile implements IFile {
     private FileSystemFile systemFile;
     private Progress progress;
 
-    public File getSystemFile() {
-        return systemFile.getFile();
-    }
-
     @Override
     public boolean exists() {
         return getAttrs() != null;
@@ -62,7 +58,7 @@ public class SSHFile implements IFile {
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
-        log.debug(String.format("Canonical path for %s is", systemFile.getName(), canonicalPath));
+        log.debug(String.format("Canonical path for %s is %s", systemFile.getName(), canonicalPath));
         return canonicalPath;
     }
 
@@ -95,8 +91,13 @@ public class SSHFile implements IFile {
     }
 
     @Override
-    public long lastModified() {
-        return getAttrs().getMtime() * 1000;
+    public long getLastModified() {
+        return getAttrs().getMtime();
+    }
+
+    @Override
+    public void setLastModified(long value) {
+        //only for source
     }
 
     @Override
@@ -124,13 +125,9 @@ public class SSHFile implements IFile {
     public void copyFile(IFile source) throws IOException {
         sshClient.useCompression();
         sshClient.newSCPFileTransfer().upload(source.getCanonicalPath(), forwardSlashPath(this));
+        source.setLastModified(getLastModified());
         progress.incrementProgress();
         log.debug("Uploaded file:" + source.getCanonicalPath());
-    }
-
-    @Override
-    public void setLastModified(long value) {
-        //only for source
     }
 
     @Override
