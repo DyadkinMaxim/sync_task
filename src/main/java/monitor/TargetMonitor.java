@@ -17,9 +17,9 @@ public class TargetMonitor implements Runnable {
 
     private final IFile source;
     private final IFile target;
-    private Progress progress;
     private static final String TARGET_NAME = "Target";
     private static boolean isFirst = true;
+    private Progress progress;
 
     @Override
     public void run() {

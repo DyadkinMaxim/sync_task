@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFileChooser;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +26,7 @@ public class LocalDatasource implements Datasource {
     @Override
     public List<Param> getConnectionSettings() {
         List<Param> params = new ArrayList<>();
-        params.add(new Param("filePath"));
+        params.add(new Param("filePath", new JFileChooser(), "Choose target directory:"));
         return List.copyOf(params);
     }
 

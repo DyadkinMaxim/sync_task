@@ -1,9 +1,9 @@
 package datasource.base;
 
-import java.awt.Component;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import javax.swing.JComponent;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -16,8 +16,9 @@ import lombok.Setter;
 @Setter
 public class Param {
     private final String name;
+    private final JComponent uiComponent;
+    private final String labelText;
     private String value;
-    private Component uiComponent;
 
     @Nullable
     public static Param getParam(List<Param> params, String name) {

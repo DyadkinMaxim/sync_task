@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFileChooser;
+import javax.swing.JTextField;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +33,15 @@ public class SSHDatasource implements Datasource {
     private String systemFilePath;
     private volatile boolean isInitialized;
 
-
     @Override
     public List<Param> getConnectionSettings() {
         List<Param> params = new ArrayList<>();
-        params.add(new Param("host"));
-        params.add(new Param("port"));
-        params.add(new Param("systemFilePath"));
-        params.add(new Param("username"));
-        params.add(new Param("privateKeyPath"));
+        params.add(new Param("host", new JTextField(), "Print host: "));
+        params.add(new Param("port", new JTextField(), "Print port: "));
+        params.add(new Param("systemFilePath",  new JTextField(), "Print target directoty path: "));
+        params.add(new Param("username", new JTextField(), "Print username: "));
+        params.add(new Param("privateKeyPath",  new JTextField(), "Choose private key: "));
+        //todo add JFileChoosers
         return List.copyOf(params);
     }
 

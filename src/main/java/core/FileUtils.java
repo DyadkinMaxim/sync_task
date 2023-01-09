@@ -1,8 +1,5 @@
 package core;
 
-import core.Progress;
-import core.Sync;
-import core.SyncImpl;
 import datasource.base.IFile;
 import java.io.IOException;
 import java.time.Instant;
