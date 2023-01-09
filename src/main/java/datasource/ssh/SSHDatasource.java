@@ -36,10 +36,10 @@ public class SSHDatasource implements Datasource {
     @Override
     public List<Param> getConnectionSettings() {
         List<Param> params = new ArrayList<>();
-        params.add(new Param("host", new JTextField(), "Print host: "));
-        params.add(new Param("port", new JTextField(), "Print port: "));
-        params.add(new Param("systemFilePath",  new JTextField(), "Print target directoty path: "));
-        params.add(new Param("username", new JTextField(), "Print username: "));
+        params.add(new Param("host", new JTextField(), "Host: "));
+        params.add(new Param("port", new JTextField(), "Port: "));
+        params.add(new Param("systemFilePath",  new JTextField(), "Target directoty path: "));
+        params.add(new Param("username", new JTextField(), "Username: "));
         params.add(new Param("privateKeyPath",  new JTextField(), "Choose private key: "));
         //todo add JFileChoosers
         return List.copyOf(params);

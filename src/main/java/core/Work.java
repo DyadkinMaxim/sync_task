@@ -2,12 +2,13 @@ package core;
 
 import datasource.base.Datasource;
 import datasource.base.DatasourceManager;
-import datasource.base.Param;
 import datasource.base.IFile;
+import datasource.base.Param;
 import datasource.local.LocalDatasource;
 import datasource.ssh.SSHDatasource;
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+import monitor.DatasourceMonitor;
 
 @Slf4j
 public class Work {
@@ -27,13 +28,15 @@ public class Work {
         manager.add(new LocalDatasource());
 
         var sourceParams = manager.getByName("LOCAL").getConnectionSettings();
-            Param.getParam(sourceParams, "filePath").setValue(sourceDir);
+        Param.getParam(sourceParams, "filePath").setValue(sourceDir);
+        var localTargetParams = manager.getByName("LOCAL").getConnectionSettings();
+        Param.getParam(localTargetParams, "filePath").setValue(targetDir);
         var sshTargetParams = manager.getByName("SSH").getConnectionSettings();
-            Param.getParam(sshTargetParams, "host").setValue(sshHost);
-            Param.getParam(sshTargetParams, "port").setValue(sshPort);
-            Param.getParam(sshTargetParams, "username").setValue(sshUser);
-            Param.getParam(sshTargetParams, "privateKeyPath").setValue(sshPrivateKey);
-            Param.getParam(sshTargetParams, "systemFilePath").setValue(sshSystemFilePath);
+        Param.getParam(sshTargetParams, "host").setValue(sshHost);
+        Param.getParam(sshTargetParams, "port").setValue(sshPort);
+        Param.getParam(sshTargetParams, "username").setValue(sshUser);
+        Param.getParam(sshTargetParams, "privateKeyPath").setValue(sshPrivateKey);
+        Param.getParam(sshTargetParams, "systemFilePath").setValue(sshSystemFilePath);
 
         Datasource sourceDS = manager.getByName("LOCAL");
         Datasource targetDS = manager.getByName("SSH");
@@ -44,22 +47,10 @@ public class Work {
             System.out.println(ex.getMessage());
         }
         IFile source = sourceDS.getRoot();
-        IFile sshTarget = targetDS.getRoot();
-
-        //DatasourceMonitor.monitor(source, sshTarget);
-        try {
-            var progress = new Progress();
-            source.setProgress(progress);
-            sshTarget.setProgress(progress);
-            var sync = new SyncImpl();
-            sync.synchronize(source, sshTarget, progress);
-            sourceDS.disconnect();
-            targetDS.disconnect();
-            log.info(String.format("Datasources disconnected: source - %s, target - %s",
-                    sourceDS.getName(), targetDS.getName()));
-
-        } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-        }
+        IFile localTarget = targetDS.getRoot();
+        var progress = new Progress();
+        source.setProgress(progress);
+        localTarget.setProgress(progress);
+        DatasourceMonitor.monitor(source, localTarget, progress);
     }
 }

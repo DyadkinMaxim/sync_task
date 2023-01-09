@@ -1,10 +1,8 @@
-package core;
+package client;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,7 +11,6 @@ public class PauseResume {
     private JFrame frame = new JFrame("PauseResume");
     private JButton button = new JButton("Start");
     private JTextArea textArea = new JTextArea(5, 20);
-    JLabel inProgresslabel = new JLabel("Sync in progress...");
 
     private final Object lock = new Object();
     private volatile boolean paused = true;
@@ -27,36 +24,45 @@ public class PauseResume {
         });
     }
 
-    public PauseResume() {
-        job.start();
+    public void init() {
+        counter.start();
         button.addActionListener(pauseResume);
 
         textArea.setLineWrap(true);
         frame.add(button, java.awt.BorderLayout.NORTH);
-        frame.add(textArea, java.awt.BorderLayout.SOUTH);
+        frame.add(textArea, BorderLayout.CENTER);
         frame.pack();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 200);
+        frame.setLocation(430, 100);
         frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    private Thread job = new Thread(new Runnable() {
+    private Thread counter = new Thread(new Runnable() {
         @Override
         public void run() {
-            allowPause();
-            frame.add(button, BorderLayout.SOUTH);
-            frame.add(inProgresslabel);
-            Work.work();
-            done();
+            while (true) {
+                work();
+            }
         }
     });
+
+    private void work() {
+        for (int i = 0; i < 10; i++) {
+            allowPause();
+            write(Integer.toString(i));
+            sleep();
+        }
+        done();
+    }
 
     private void allowPause() {
         synchronized (lock) {
             while (paused) {
                 try {
                     lock.wait();
-                } catch (InterruptedException ex) {
-                    log.error(ex.getMessage());
+                } catch (InterruptedException e) {
+                    // nothing
                 }
             }
         }
@@ -77,14 +83,21 @@ public class PauseResume {
     private void sleep() {
         try {
             Thread.sleep(500);
-        } catch (InterruptedException ex) {
-            log.error(ex.getMessage());
+        } catch (InterruptedException e) {
+            // nothing
         }
     }
 
     private void done() {
-        button.setText("Sync again");
-        inProgresslabel.setVisible(false);
+        button.setText("Start");
         paused = true;
+    }
+
+    public void write(String str) {
+        textArea.append(str);
+    }
+
+    public void setVisible(boolean isVisible) {
+        frame.setVisible(isVisible);
     }
 }
