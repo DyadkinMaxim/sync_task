@@ -1,9 +1,9 @@
 package core;
 
+import client.PauseResume;
 import datasource.base.IFile;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,11 +18,16 @@ public class Progress {
     private long totalFileNumber;
     private volatile AtomicLong processedFileNumber;
     private volatile int progressValue;
+    private final PauseResume pauseResume;
+
+    public Progress(PauseResume pauseResume) {
+        this.pauseResume = pauseResume;
+    }
 
     public void initProgress(IFile source, IFile target) {
         processedFileNumber = new AtomicLong(-1); // to account source root directory
         totalFileNumber = source.countAll() + target.countAll();
-        log.info("Progress started");
+        pauseResume.printProgress("Progress started");
     }
 
     /**
@@ -33,14 +38,14 @@ public class Progress {
     public String countProgress() {
         if (totalFileNumber == 0) {
             var emptyMsg = "Empty source and target directories";
-            log.info(emptyMsg);
+            pauseResume.printProgress(emptyMsg);
             return emptyMsg;
         } else {
             double doubleProgess = (double) this.processedFileNumber.longValue() / this.totalFileNumber;
             progressValue = (int) Math.round(doubleProgess * 100.0);
         }
         var message = "Progress is " + progressValue + "%";
-        log.info(message);
+        pauseResume.printProgress(message);
         return message;
     }
 
@@ -56,7 +61,7 @@ public class Progress {
             countProgress();
         }
         processedFileNumber = new AtomicLong(-1); // to account source root directory
-        log.info("Sync finished :)");
-        log.info("Progress reset is done");
+        pauseResume.printProgress("Sync finished :)");
+        log.debug("Progress reset is done");
     }
 }

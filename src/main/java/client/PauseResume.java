@@ -1,8 +1,10 @@
 package client;
 
+import core.Work;
 import java.awt.BorderLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,48 +17,25 @@ public class PauseResume {
     private final Object lock = new Object();
     private volatile boolean paused = true;
 
-    public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new PauseResume();
-            }
-        });
-    }
-
     public void init() {
-        counter.start();
+        JScrollPane scroll = new JScrollPane(textArea,
+                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         button.addActionListener(pauseResume);
-
         textArea.setLineWrap(true);
         frame.add(button, java.awt.BorderLayout.NORTH);
-        frame.add(textArea, BorderLayout.CENTER);
+        //frame.add(textArea, BorderLayout.CENTER);
+        frame.add(scroll, BorderLayout.CENTER);
         frame.pack();
-        frame.setSize(300, 200);
+        frame.setSize(400, 300);
         frame.setLocation(430, 100);
         frame.setVisible(true);
+        frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        monitoring.start();
     }
 
-    private Thread counter = new Thread(new Runnable() {
-        @Override
-        public void run() {
-            while (true) {
-                work();
-            }
-        }
-    });
-
-    private void work() {
-        for (int i = 0; i < 10; i++) {
-            allowPause();
-            write(Integer.toString(i));
-            sleep();
-        }
-        done();
-    }
-
-    private void allowPause() {
+    public void allowPause() {
         synchronized (lock) {
             while (paused) {
                 try {
@@ -66,6 +45,26 @@ public class PauseResume {
                 }
             }
         }
+    }
+
+    public void printProgress(String message) {
+        textArea.append("\n" + message);
+        log.info(message);
+    }
+
+    private Thread monitoring = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            while (true) {
+                allowPause();
+                work();
+            }
+        }
+    });
+
+    private void work() {
+        Work.work(this);
+        done();
     }
 
     private java.awt.event.ActionListener pauseResume =
@@ -80,21 +79,9 @@ public class PauseResume {
                 }
             };
 
-    private void sleep() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            // nothing
-        }
-    }
-
     private void done() {
-        button.setText("Start");
+        button.setText("Start sync");
         paused = true;
-    }
-
-    public void write(String str) {
-        textArea.append(str);
     }
 
     public void setVisible(boolean isVisible) {

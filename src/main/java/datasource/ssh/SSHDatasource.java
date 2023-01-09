@@ -95,6 +95,7 @@ public class SSHDatasource implements Datasource {
         SSHClient client;
         try {
             client = new SSHClient();
+            // todo  new PromiscuousVerifier() is ok?
             client.addHostKeyVerifier(new PromiscuousVerifier());
             File privateKey = new File(sshPrivateKey);
             KeyProvider keys = client.loadKeys(privateKey.getPath());

@@ -1,5 +1,6 @@
 package monitor;
 
+import client.PauseResume;
 import core.Progress;
 import core.SyncImpl;
 import core.FileUtils;
@@ -20,6 +21,7 @@ public class TargetMonitor implements Runnable {
     private static final String TARGET_NAME = "Target";
     private static boolean isFirst = true;
     private Progress progress;
+    private PauseResume pauseResume;
 
     @Override
     public void run() {
@@ -28,7 +30,7 @@ public class TargetMonitor implements Runnable {
             var sourceLM = source.getLastModified();
             var targetLM = target.getLastModified();
             if (isFirst || sourceLM != targetLM) {
-                FileUtils.doSync(source, target, progress, TARGET_NAME);
+                FileUtils.doSync(source, target, progress, pauseResume, TARGET_NAME);
                 isFirst = false;
             }
         } catch (Exception e) {

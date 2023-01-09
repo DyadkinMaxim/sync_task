@@ -17,7 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-public class Configuration {
+public class SyncConfig {
 
     public void init(String targetType) {
         var manager = new DatasourceManager();
@@ -65,7 +65,7 @@ public class Configuration {
             @SuppressWarnings("deprecation")
             public void actionPerformed(ActionEvent e) {
                 frame.setVisible(false);
-                GUIForm.pauseResume.setVisible(true);
+                GUIForm.pauseResume.init();
 
             }
         });

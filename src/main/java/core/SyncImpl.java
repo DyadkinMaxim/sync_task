@@ -1,5 +1,6 @@
 package core;
 
+import client.PauseResume;
 import datasource.base.IFile;
 import java.io.IOException;
 import java.util.Arrays;
@@ -11,9 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 public class SyncImpl implements Sync {
-
-    private static boolean globalPause = false;
-
     /**
      * Recursive calls from root source and root target
      * Steps:
@@ -26,7 +24,8 @@ public class SyncImpl implements Sync {
      * @param target root directory at first call and subfiles at subsequent calls
      */
     @Override
-    public synchronized void synchronize(IFile source, IFile target, Progress progress) throws IOException {
+    public synchronized void synchronize(
+            IFile source, IFile target, Progress progress, PauseResume pauseResume) throws IOException {
         log.debug("Sync started for source " + source.getCanonicalPath());
         if (source.isDirectory()) {
             validateTarget(source, target, progress);
@@ -39,6 +38,7 @@ public class SyncImpl implements Sync {
 
             //delete files not present in source
             for (String fileName : targets) {
+                pauseResume.allowPause();
                 if (!srcNames.contains(fileName)) {
                     target.getChild(fileName).delete();
                 } else {
@@ -48,11 +48,12 @@ public class SyncImpl implements Sync {
             log.debug("All files not present is source are deleted");
             //copy each file from source
             for (String fileName : sources) {
+                pauseResume.allowPause();
                 IFile sourceFile = source.getChild(fileName);
                 IFile targetFile = target.getChild(fileName);
                 log.debug(String.format("Sync called for: %s and %s",
                         sourceFile.getCanonicalPath(), target.getCanonicalPath()));
-                synchronize(sourceFile, targetFile, progress);
+                synchronize(sourceFile, targetFile, progress, pauseResume);
             }
         } else {
             if (target.exists() && target.isDirectory()) {
@@ -90,10 +91,5 @@ public class SyncImpl implements Sync {
             );
         }
         progress.incrementProgress();
-    }
-
-    @Override
-    public void setPause(boolean isPaused) {
-        globalPause = isPaused;
     }
 }

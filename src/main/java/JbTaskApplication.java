@@ -49,10 +49,10 @@ public class JbTaskApplication {
         }
         IFile source = sourceDS.getRoot();
         IFile localTarget = targetDS.getRoot();
-        var progress = new Progress();
-        source.setProgress(progress);
-        localTarget.setProgress(progress);
-      DatasourceMonitor.monitor(source, localTarget, progress);
+//        var progress = new Progress();
+//        source.setProgress(progress);
+//        localTarget.setProgress(progress);
+//      DatasourceMonitor.monitor(source, localTarget, progress);
 //        try {
 //            var progress = Progress.initProgress(source, sshTarget);
 //            source.setProgress(progress);

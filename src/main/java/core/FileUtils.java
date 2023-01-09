@@ -1,5 +1,6 @@
 package core;
 
+import client.PauseResume;
 import datasource.base.IFile;
 import java.io.IOException;
 import java.time.Instant;
@@ -12,11 +13,12 @@ public class FileUtils {
     private static Sync sync = new SyncImpl();
     public static volatile Instant lastSync;
 
-    public static synchronized void doSync(IFile source, IFile target, Progress progress, String type) {
-        log.info(String.format("%s-event sync started: %s", type, source.getCanonicalPath()));
+    public static synchronized void doSync(
+            IFile source, IFile target, Progress progress, PauseResume pauseResume, String type) {
+        pauseResume.printProgress(String.format("%s-event sync started: %s", type, source.toPath().getFileName()));
         try {
             progress.initProgress(source, target);
-            sync.synchronize(source, target, progress);
+            sync.synchronize(source, target, progress, pauseResume);
             source.setLastModified(target.getLastModified());
             lastSync = Instant.now();
             progress.resetProgress();

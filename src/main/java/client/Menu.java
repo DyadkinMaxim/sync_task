@@ -24,11 +24,11 @@ class Menu {
         var label = new JLabel("Select target type: ");
         panel.add(label, BorderLayout.LINE_START);
 
-        var manager = new DatasourceManager();
-        manager.add(new LocalDatasource());
-        manager.add(new SSHDatasource());
-        manager.add(new SimpleDS());
-        var targetTypes = manager.getNames().toArray(new String[0]);
+        var dsManager = new DatasourceManager();
+        dsManager.add(new LocalDatasource());
+        dsManager.add(new SSHDatasource());
+        dsManager.add(new SimpleDS());
+        var targetTypes = dsManager.getNames().toArray(new String[0]);
 
         var targetDropDown = new JComboBox<>(targetTypes);
         targetDropDown.setMaximumSize(targetDropDown.getPreferredSize());
@@ -46,7 +46,7 @@ class Menu {
             public void actionPerformed(ActionEvent e) {
                 String targetType = targetDropDown.getSelectedItem().toString();
                 frame.setVisible(false);
-                GUIForm.configuration.init(targetType);
+                GUIForm.syncConfig.init(targetType);
 
             }
         });

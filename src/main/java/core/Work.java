@@ -1,5 +1,6 @@
 package core;
 
+import client.PauseResume;
 import datasource.base.Datasource;
 import datasource.base.DatasourceManager;
 import datasource.base.IFile;
@@ -21,8 +22,8 @@ public class Work {
     private static final String sshUser = "dyadkinm";
     private static final String sshPrivateKey = "C:\\Users\\Dyadkin Maxim\\.ssh\\id_ed25519";
 
-    public static void work() {
-        log.info("App started");
+    public static void work(PauseResume pauseResume) {
+        pauseResume.printProgress("App started");
         DatasourceManager manager = new DatasourceManager();
         manager.add(new SSHDatasource());
         manager.add(new LocalDatasource());
@@ -48,9 +49,9 @@ public class Work {
         }
         IFile source = sourceDS.getRoot();
         IFile localTarget = targetDS.getRoot();
-        var progress = new Progress();
+        var progress = new Progress(pauseResume);
         source.setProgress(progress);
         localTarget.setProgress(progress);
-        DatasourceMonitor.monitor(source, localTarget, progress);
+        DatasourceMonitor.monitor(source, localTarget, progress, pauseResume);
     }
 }
