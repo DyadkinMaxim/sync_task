@@ -19,7 +19,7 @@ public class TargetMonitor implements Runnable {
     private final IFile source;
     private final IFile target;
     private static final String TARGET_NAME = "Target";
-    private static boolean isFirst = true;
+    private static boolean isFirst = true; // unconditional first sync
     private Progress progress;
     private PauseResume pauseResume;
 
@@ -33,8 +33,8 @@ public class TargetMonitor implements Runnable {
                 FileUtils.doSync(source, target, progress, pauseResume, TARGET_NAME);
                 isFirst = false;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
         }
     }
 }

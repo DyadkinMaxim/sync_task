@@ -38,27 +38,27 @@ public class SourceMonitor {
                 StandardWatchEventKinds.ENTRY_MODIFY);
 
         WatchKey key;
-        while ((key = watchService.take()) != null) {
-            // to handle several events, for example: new folder + rename
-            try {
+        try {
+            while ((key = watchService.take()) != null) {
+                // to handle several events, for example: new folder + rename
                 Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                log.error(ex.getMessage());
-            }
-            for (WatchEvent<?> event : key.pollEvents()) {
-                // todo logs to debug level
-                log.info("Watch service triggered: " + event.context());
-                var sourceLastModified = Instant.now();
-                // To avoid miss sync from Watcher: sourceLastModified - lastSync > 1 second
-                var shiftedSourceLM = sourceLastModified.minus(1, ChronoUnit.SECONDS);
-                if (FileUtils.lastSync != null && shiftedSourceLM.compareTo(FileUtils.lastSync) > 0) {
-                    FileUtils.doSync(source, target, progress, pauseResume, SOURCE_NAME);
-                } else {
-                    log.info(String.format("Event %s is ignored - already processed",
-                            rootPath.resolve(event.context().toString())));
+                for (WatchEvent<?> event : key.pollEvents()) {
+                    // todo logs to debug level
+                    log.info("Watch service triggered: " + event.context());
+                    var sourceLastModified = Instant.now();
+                    // To avoid miss sync from Watcher: sourceLastModified - lastSync > 1 second
+                    var shiftedSourceLM = sourceLastModified.minus(1, ChronoUnit.SECONDS);
+                    if (FileUtils.lastSync != null && shiftedSourceLM.compareTo(FileUtils.lastSync) > 0) {
+                        FileUtils.doSync(source, target, progress, pauseResume, SOURCE_NAME);
+                    } else {
+                        log.info(String.format("Event %s is ignored - already processed",
+                                rootPath.resolve(event.context().toString())));
+                    }
                 }
+                key.reset();
             }
-            key.reset();
+        } catch (InterruptedException ex) {
+            throw new InterruptedException("Current sync was cancelled");
         }
     }
 }

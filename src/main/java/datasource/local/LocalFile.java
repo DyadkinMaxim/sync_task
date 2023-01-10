@@ -40,7 +40,7 @@ public class LocalFile implements IFile {
         try {
             path = file.getCanonicalPath();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error(ex.getMessage());
         }
         return path;
     }

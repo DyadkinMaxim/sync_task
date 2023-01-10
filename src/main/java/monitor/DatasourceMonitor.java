@@ -23,8 +23,8 @@ public class DatasourceMonitor {
             scheduler.scheduleAtFixedRate(
                     targetMonitor, 0, 60, TimeUnit.SECONDS);
             SourceMonitor.sourceWatch(source, target, progress, pauseResume);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+          log.warn(ex.getMessage());
         }
     }
 }

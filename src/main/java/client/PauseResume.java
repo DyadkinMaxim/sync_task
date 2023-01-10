@@ -2,6 +2,8 @@ package client;
 
 import core.Work;
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -11,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PauseResume {
     private JFrame frame = new JFrame("PauseResume");
-    private JButton button = new JButton("Start");
+    private JButton controlBtn = new JButton("Start sync");
+    private JButton menuBtn = new JButton("Menu");
+
     private JTextArea textArea = new JTextArea(5, 20);
 
     private final Object lock = new Object();
@@ -21,10 +25,11 @@ public class PauseResume {
         JScrollPane scroll = new JScrollPane(textArea,
                 JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        button.addActionListener(pauseResume);
+        controlBtn.addActionListener(controlListener);
+        menuBtn.addActionListener(menuListener);
         textArea.setLineWrap(true);
-        frame.add(button, java.awt.BorderLayout.NORTH);
-        //frame.add(textArea, BorderLayout.CENTER);
+        frame.add(controlBtn, BorderLayout.NORTH);
+        frame.add(menuBtn, BorderLayout.SOUTH);
         frame.add(scroll, BorderLayout.CENTER);
         frame.pack();
         frame.setSize(400, 300);
@@ -67,24 +72,38 @@ public class PauseResume {
         done();
     }
 
-    private java.awt.event.ActionListener pauseResume =
-            new java.awt.event.ActionListener() {
+    private ActionListener controlListener =
+            new ActionListener() {
                 @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
+                public void actionPerformed(ActionEvent e) {
                     paused = !paused;
-                    button.setText(paused ? "Resume" : "Pause");
+                    controlBtn.setText(paused ? "Resume" : "Pause");
                     synchronized (lock) {
                         lock.notifyAll();
                     }
                 }
             };
 
+    private ActionListener menuListener =
+            new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    interruptMonitoring();
+                    frame.setVisible(false);
+                    GUIForm.menu.setVisible(true);
+                }
+            };
+
     private void done() {
-        button.setText("Start sync");
+        controlBtn.setText("Start sync");
         paused = true;
     }
 
-    public void setVisible(boolean isVisible) {
-        frame.setVisible(isVisible);
+    private void interruptMonitoring() {
+        paused = true;
+        synchronized (lock) {
+            lock.notifyAll();
+        }
+        monitoring.interrupt();
     }
 }
