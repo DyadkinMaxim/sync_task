@@ -44,9 +44,10 @@ class Menu {
         selectBtn.addActionListener(new ActionListener() {
             @SuppressWarnings("deprecation")
             public void actionPerformed(ActionEvent e) {
-                String targetType = targetDropDown.getSelectedItem().toString();
+                var targetDatasource =
+                        dsManager.getByName(targetDropDown.getSelectedItem().toString());
                 frame.setVisible(false);
-                GUIForm.syncConfig.init(targetType);
+                GUIForm.syncConfig.init(targetDatasource);
 
             }
         });

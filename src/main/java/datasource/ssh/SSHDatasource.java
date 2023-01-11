@@ -48,11 +48,12 @@ public class SSHDatasource implements Datasource {
     @Override
     public synchronized void connect(List<Param> params) throws IOException {
         if (isInitialized) {
-            throw new IllegalStateException("SSH connection is already initialized");
+            log.debug("SSH connection is already initialized");
+            return;
         }
         var host = Param.getParam(params, "host").getValue();
-        var port = Param.getParam(params, "port") == null ?
-                Param.getParam(params, "port").getValue() : DEFAULT_PORT;
+        var port = Param.getParam(params, "port").equals("")
+                 ? DEFAULT_PORT : Param.getParam(params, "port").getValue();
         var username = Param.getParam(params, "username").getValue();
         var privateKeyPath = Param.getParam(params, "privateKeyPath").getValue();
         systemFilePath = Param.getParam(params, "systemFilePath").getValue();

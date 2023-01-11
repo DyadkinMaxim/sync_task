@@ -1,6 +1,7 @@
 package client;
 
-import core.Work;
+import core.SyncJob;
+import datasource.base.Datasource;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,21 +16,27 @@ public class PauseResume {
     private JFrame frame = new JFrame("PauseResume");
     private JButton controlBtn = new JButton("Start sync");
     private JButton menuBtn = new JButton("Menu");
-
     private JTextArea textArea = new JTextArea(5, 20);
+    JScrollPane scroll = new JScrollPane(textArea,
+            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+            JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
     private final Object lock = new Object();
-    private volatile boolean paused = true;
+    private Datasource sourceDatasource;
+    private Datasource targetDatasource;
+    private static volatile boolean isPaused;
 
-    public void init() {
-        JScrollPane scroll = new JScrollPane(textArea,
-                JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+    public synchronized void init(Datasource sourceDatasource, Datasource targetDatasource) {
+        this.sourceDatasource = sourceDatasource;
+        this.targetDatasource = targetDatasource;
+
         controlBtn.addActionListener(controlListener);
         menuBtn.addActionListener(menuListener);
         textArea.setLineWrap(true);
+        textArea.setText("");
         frame.add(controlBtn, BorderLayout.NORTH);
         frame.add(menuBtn, BorderLayout.SOUTH);
+        //frame.add(textArea, BorderLayout.CENTER);
         frame.add(scroll, BorderLayout.CENTER);
         frame.pack();
         frame.setSize(400, 300);
@@ -37,12 +44,13 @@ public class PauseResume {
         frame.setVisible(true);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        monitoring.start();
+        isPaused = true;
+        createThread().start();
     }
 
     public void allowPause() {
         synchronized (lock) {
-            while (paused) {
+            while (isPaused) {
                 try {
                     lock.wait();
                 } catch (InterruptedException e) {
@@ -57,18 +65,31 @@ public class PauseResume {
         log.info(message);
     }
 
+    private Thread createThread() {
+        return new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    allowPause();
+                    syncJob();
+                }
+            }
+        });
+    }
+
+
     private Thread monitoring = new Thread(new Runnable() {
         @Override
         public void run() {
             while (true) {
                 allowPause();
-                work();
+                syncJob();
             }
         }
     });
 
-    private void work() {
-        Work.work(this);
+    private void syncJob() {
+        SyncJob.job(sourceDatasource, targetDatasource, this);
         done();
     }
 
@@ -76,8 +97,8 @@ public class PauseResume {
             new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    paused = !paused;
-                    controlBtn.setText(paused ? "Resume" : "Pause");
+                    isPaused = !isPaused;
+                    controlBtn.setText(isPaused ? "Resume" : "Pause");
                     synchronized (lock) {
                         lock.notifyAll();
                     }
@@ -88,6 +109,7 @@ public class PauseResume {
             new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    isPaused = true;
                     interruptMonitoring();
                     frame.setVisible(false);
                     GUIForm.menu.setVisible(true);
@@ -96,14 +118,14 @@ public class PauseResume {
 
     private void done() {
         controlBtn.setText("Start sync");
-        paused = true;
+        isPaused = true;
     }
 
     private void interruptMonitoring() {
-        paused = true;
+        isPaused = true;
         synchronized (lock) {
             lock.notifyAll();
         }
-        monitoring.interrupt();
+        Thread.currentThread().interrupt();
     }
 }
