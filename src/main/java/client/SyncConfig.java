@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ public class SyncConfig {
     public void init(Datasource targetDatasource) {
         var panel = initUI(targetDatasource);
         var sourcePathField = addSourceUI(panel);
+        browseFile(panel, sourcePathField);
         var targetComponents = addTargetUI(targetDatasource.getConnectionSettings(), panel);
         addSubmitBtn(panel, sourcePathField, targetDatasource, targetComponents);
         addMenuBtn(panel);
@@ -34,8 +36,7 @@ public class SyncConfig {
 
     private JPanel initUI(Datasource targetDatasource) {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(350,
-                200 +(30 * targetDatasource.getConnectionSettings().size()));
+        frame.setSize(350, computeHeight(targetDatasource));
         frame.setLocation(430, 100);
         frame.setVisible(true);
         frame.setResizable(false);
@@ -43,12 +44,6 @@ public class SyncConfig {
         var panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         frame.add(panel);
-
-        JLabel targetLabel = new JLabel("Target: ");
-        var targetFont = new Font("Courier", Font.BOLD, 14);
-        targetLabel.setFont(targetFont);
-        targetLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(targetLabel);
         return panel;
     }
 
@@ -59,12 +54,12 @@ public class SyncConfig {
         sourceLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(sourceLabel);
 
-        var sourcePathLabel = new JLabel("Path to source directory: ");
+        var sourcePathLabel = new JLabel("Choose source directory: ");
         sourcePathLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        //sourcePathLabel.setSize(150,40);
+        sourcePathLabel.setSize(150,40);
         panel.add(sourcePathLabel);
         var sourcePath = new JTextField();
-        //sourcePath.setMaximumSize(new Dimension(350, 20));
+        sourcePath.setMaximumSize(new Dimension(350, 20));
         sourcePath.setAlignmentX(Component.LEFT_ALIGNMENT);
         sourcePath.setName("sourcePath");
         panel.add(sourcePath);
@@ -72,6 +67,11 @@ public class SyncConfig {
     }
 
     private List<JComponent> addTargetUI(List<Param> settings, JPanel panel) {
+        JLabel targetLabel = new JLabel("Target: ");
+        var targetFont = new Font("Courier", Font.BOLD, 14);
+        targetLabel.setFont(targetFont);
+        targetLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(targetLabel);
         List<JComponent> components = new ArrayList<>();
         for (var param : settings) {
             var label = new JLabel(param.getLabelText());
@@ -79,12 +79,15 @@ public class SyncConfig {
             panel.add(label);
             var component = param.getUiComponent();
             component.setName(param.getName());
-            if (component.getClass() == JTextField.class) {
-                component.setSize(new Dimension(300, 20));
-                component.setAlignmentX(Component.LEFT_ALIGNMENT);
-                //component.setMaximumSize(new Dimension(350, 20));
-            }
+            component.setSize(new Dimension(300, 20));
+            component.setMaximumSize(new Dimension(350, 20));
+            component.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(component);
+            if (component.getName().startsWith("choose")) {
+               var componentPathField = (JTextField) component;
+               browseFile(panel, componentPathField);
+            }
+
             components.add(component);
         }
         return components;
@@ -112,13 +115,14 @@ public class SyncConfig {
     }
 
     private void addMenuBtn(JPanel panel) {
-        JButton backBtn = new JButton("Menu");
-        backBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(backBtn);
+        JButton menuBtn = new JButton("Menu");
+        menuBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(menuBtn);
 
-        backBtn.addActionListener(new ActionListener() {
+        menuBtn.addActionListener(new ActionListener() {
             @SuppressWarnings("deprecation")
             public void actionPerformed(ActionEvent e) {
+                panel.removeAll();
                 frame.setVisible(false);
                 GUIForm.menu.setVisible(true);
 
@@ -128,7 +132,7 @@ public class SyncConfig {
 
     private List<Param> collectSourcePath(JTextField sourcePath) {
         var sourceParams = new LocalDatasource().getConnectionSettings();
-        Param.getParam(sourceParams, "filePath").setValue(sourcePath.getText());
+        Param.getParam(sourceParams, "chooseFilePath").setValue(sourcePath.getText());
         return sourceParams;
     }
 
@@ -160,5 +164,37 @@ public class SyncConfig {
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    private void browseFile(JPanel panel, JTextField componentPathFiled) {
+        JButton browseBtn = new JButton("Browse");
+        browseBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(browseBtn);
+
+        browseBtn.addActionListener(new ActionListener() {
+            @SuppressWarnings("deprecation")
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File("."));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                int response = fileChooser.showOpenDialog(null);
+                if(response == JFileChooser.APPROVE_OPTION) {
+                    File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+                    componentPathFiled.setText(file.getAbsolutePath());
+                }
+            }
+        });
+    }
+
+    private int computeHeight(Datasource targetDatasource) {
+        int size = 0;
+        var settings = targetDatasource.getConnectionSettings();
+        int countFileSelector = 0;
+        for(var setting : settings) {
+            if(setting.getName().startsWith("choose")){
+                countFileSelector++;
+            }
+        }
+       return 180 + 40 * (settings.size() + countFileSelector);
     }
 }

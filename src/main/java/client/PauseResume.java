@@ -5,6 +5,9 @@ import datasource.base.Datasource;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -16,6 +19,7 @@ public class PauseResume {
     private JFrame frame = new JFrame("PauseResume");
     private JButton controlBtn = new JButton("Start sync");
     private JButton menuBtn = new JButton("Menu");
+    private JButton exitBtn = new JButton("Exit");
     private JTextArea textArea = new JTextArea(5, 20);
     JScrollPane scroll = new JScrollPane(textArea,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -32,12 +36,13 @@ public class PauseResume {
 
         controlBtn.addActionListener(controlListener);
         menuBtn.addActionListener(menuListener);
+        exitBtn.addActionListener(exitListener);
         textArea.setLineWrap(true);
         textArea.setText("");
         frame.add(controlBtn, BorderLayout.NORTH);
-        frame.add(menuBtn, BorderLayout.SOUTH);
-        //frame.add(textArea, BorderLayout.CENTER);
         frame.add(scroll, BorderLayout.CENTER);
+        //frame.add(menuBtn, BorderLayout.CENTER);
+        frame.add(exitBtn, BorderLayout.SOUTH);
         frame.pack();
         frame.setSize(400, 300);
         frame.setLocation(430, 100);
@@ -61,7 +66,7 @@ public class PauseResume {
     }
 
     public void printProgress(String message) {
-        textArea.append("\n" + message);
+        textArea.append("\n" + LocalTime.now().truncatedTo(ChronoUnit.SECONDS) + " " + message);
         log.info(message);
     }
 
@@ -113,6 +118,20 @@ public class PauseResume {
                     interruptMonitoring();
                     frame.setVisible(false);
                     GUIForm.menu.setVisible(true);
+                }
+            };
+
+    private ActionListener exitListener =
+            new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        sourceDatasource.disconnect();
+                        targetDatasource.disconnect();
+                        System.exit(1);
+                    } catch (IOException ex) {
+                        log.error(ex.getMessage());
+                    }
                 }
             };
 

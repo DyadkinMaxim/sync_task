@@ -28,13 +28,13 @@ public class LocalDatasource implements Datasource {
     public List<Param> getConnectionSettings() {
         List<Param> params = new ArrayList<>();
         //todo change to JFileChooser
-        params.add(new Param("filePath", new JTextField(), "Choose target directory:"));
+        params.add(new Param("chooseFilePath", new JTextField(), "Choose target directory:"));
         return List.copyOf(params);
     }
 
     @Override
     public synchronized void connect(List<Param> params) throws IOException {
-        filePath = Param.getParam(params, "filePath").getValue();
+        filePath = Param.getParam(params, "chooseFilePath").getValue();
         if (!Files.exists(Path.of(filePath))) {
             throw new IOException("No file found by path: " + filePath);
         }
@@ -51,7 +51,7 @@ public class LocalDatasource implements Datasource {
 
     @Override
     public IFile getRoot() {
-        var newFile = new File(filePath);
+         var newFile = new File(filePath);
         return new LocalFile(newFile, null);
     }
 

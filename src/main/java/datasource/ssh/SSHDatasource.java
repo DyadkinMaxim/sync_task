@@ -40,7 +40,7 @@ public class SSHDatasource implements Datasource {
         params.add(new Param("port", new JTextField(), "Port: "));
         params.add(new Param("systemFilePath",  new JTextField(), "Target directoty path: "));
         params.add(new Param("username", new JTextField(), "Username: "));
-        params.add(new Param("privateKeyPath",  new JTextField(), "Choose private key: "));
+        params.add(new Param("choosePrivateKeyPath",  new JTextField(), "Choose private key: "));
         //todo add JFileChoosers
         return List.copyOf(params);
     }
@@ -55,7 +55,7 @@ public class SSHDatasource implements Datasource {
         var port = Param.getParam(params, "port").equals("")
                  ? DEFAULT_PORT : Param.getParam(params, "port").getValue();
         var username = Param.getParam(params, "username").getValue();
-        var privateKeyPath = Param.getParam(params, "privateKeyPath").getValue();
+        var privateKeyPath = Param.getParam(params, "choosePrivateKeyPath").getValue();
         systemFilePath = Param.getParam(params, "systemFilePath").getValue();
         sshClient = createSSHClient(host, port, username, privateKeyPath);
         sftpClient = sshClient.newSFTPClient();
