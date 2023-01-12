@@ -27,7 +27,6 @@ public class LocalDatasource implements Datasource {
     @Override
     public List<Param> getConnectionSettings() {
         List<Param> params = new ArrayList<>();
-        //todo change to JFileChooser
         params.add(new Param("chooseFilePath", new JTextField(), "Choose target directory:"));
         return List.copyOf(params);
     }

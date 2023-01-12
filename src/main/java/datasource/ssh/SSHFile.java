@@ -40,7 +40,7 @@ public class SSHFile implements IFile {
             log.debug("Folder created: " + forwardSlashPath(this));
             return true;
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
         return false;
     }
@@ -56,7 +56,7 @@ public class SSHFile implements IFile {
         try {
             canonicalPath = sftpClient.canonicalize(systemFile.getFile().getPath());
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
         log.debug(String.format("Canonical path for %s is %s", systemFile.getName(), canonicalPath));
         return canonicalPath;
@@ -86,7 +86,7 @@ public class SSHFile implements IFile {
                 list.add(file.getName());
             }
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
         return list.toArray(new String[list.size()]);
     }
@@ -122,7 +122,7 @@ public class SSHFile implements IFile {
         try {
             attrs = sftpClient.statExistence(forwardSlashPath(this));
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
         return attrs;
     }
@@ -141,7 +141,7 @@ public class SSHFile implements IFile {
         try {
             delete(this, sftpClient);
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 

@@ -24,7 +24,9 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SyncConfig {
 
     JFrame frame = new JFrame("Set configuration properties:");
@@ -110,17 +112,15 @@ public class SyncConfig {
         panel.add(submitBtn);
         panel.add(Box.createVerticalGlue());
 
-        submitBtn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                var sourceDatasource = new LocalDatasource();
-                var sourceParams = collectSourcePath(sourcePath);
-                var targetParams =
-                        collectTargetParams(targetDatasource.getConnectionSettings(), components);
-                connectDatasources(sourceDatasource, sourceParams, targetDatasource, targetParams);
-                frame.setVisible(false);
-                GUIForm.pauseResume.init(sourceDatasource, targetDatasource);
+        submitBtn.addActionListener(e -> {
+            var sourceDatasource = new LocalDatasource();
+            var sourceParams = collectSourcePath(sourcePath);
+            var targetParams =
+                    collectTargetParams(targetDatasource.getConnectionSettings(), components);
+            connectDatasources(sourceDatasource, sourceParams, targetDatasource, targetParams);
+            frame.setVisible(false);
+            GUIForm.pauseResume.init(sourceDatasource, targetDatasource);
 
-            }
         });
     }
 
@@ -130,14 +130,11 @@ public class SyncConfig {
         menuBtn.setMaximumSize(new Dimension(100, 20));
         panel.add(menuBtn);
 
-        menuBtn.addActionListener(new ActionListener() {
-            @SuppressWarnings("deprecation")
-            public void actionPerformed(ActionEvent e) {
-                panel.removeAll();
-                frame.setVisible(false);
-                GUIForm.menu.setVisible(true);
+        menuBtn.addActionListener(e -> {
+            panel.removeAll();
+            frame.setVisible(false);
+            GUIForm.menu.setVisible(true);
 
-            }
         });
     }
 
@@ -172,7 +169,7 @@ public class SyncConfig {
             sourceDatasource.connect(sourceParams);
             targetDatasource.connect(targetParams);
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 
@@ -183,17 +180,14 @@ public class SyncConfig {
         panel.add(browseBtn);
         panel.add(Box.createVerticalGlue());
 
-        browseBtn.addActionListener(new ActionListener() {
-            @SuppressWarnings("deprecation")
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setCurrentDirectory(new File("."));
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                int response = fileChooser.showOpenDialog(null);
-                if (response == JFileChooser.APPROVE_OPTION) {
-                    File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
-                    componentPathFiled.setText(file.getAbsolutePath());
-                }
+        browseBtn.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File("."));
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+            int response = fileChooser.showOpenDialog(null);
+            if (response == JFileChooser.APPROVE_OPTION) {
+                File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
+                componentPathFiled.setText(file.getAbsolutePath());
             }
         });
     }

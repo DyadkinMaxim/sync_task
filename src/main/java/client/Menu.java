@@ -1,6 +1,5 @@
 package client;
 
-import datasource.SimpleDS;
 import datasource.base.DatasourceManager;
 import datasource.local.LocalDatasource;
 import datasource.ssh.SSHDatasource;
@@ -27,7 +26,6 @@ class Menu {
         var dsManager = new DatasourceManager();
         dsManager.add(new LocalDatasource());
         dsManager.add(new SSHDatasource());
-        dsManager.add(new SimpleDS());
         var targetTypes = dsManager.getNames().toArray(new String[0]);
 
         var targetDropDown = new JComboBox<>(targetTypes);
@@ -41,15 +39,12 @@ class Menu {
         frame.setLocation(430, 100);
         frame.setVisible(true);
 
-        selectBtn.addActionListener(new ActionListener() {
-            @SuppressWarnings("deprecation")
-            public void actionPerformed(ActionEvent e) {
-                var targetDatasource =
-                        dsManager.getByName(targetDropDown.getSelectedItem().toString());
-                frame.setVisible(false);
-                GUIForm.syncConfig.init(targetDatasource);
+        selectBtn.addActionListener(e -> {
+            var targetDatasource =
+                    dsManager.getByName(targetDropDown.getSelectedItem().toString());
+            frame.setVisible(false);
+            GUIForm.syncConfig.init(targetDatasource);
 
-            }
         });
     }
 

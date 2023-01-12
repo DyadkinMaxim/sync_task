@@ -99,7 +99,7 @@ public class LocalFile implements IFile {
                         progress.incrementProgress();
                     });
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 
