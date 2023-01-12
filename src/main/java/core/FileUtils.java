@@ -5,6 +5,7 @@ import datasource.base.IFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.swing.JOptionPane;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -24,6 +25,7 @@ public class FileUtils {
             progress.resetProgress();
         } catch (IOException ex) {
             log.error(ex.getMessage());
+            JOptionPane.showMessageDialog(null, ex.getMessage());
         }
     }
 

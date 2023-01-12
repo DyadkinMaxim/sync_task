@@ -16,8 +16,8 @@ public class DatasourceMonitor {
     public static void monitor(IFile source, IFile target,
                                Progress progress, PauseResume pauseResume) {
         try {
-            pauseResume.printProgress(String.format("Monitoring started for source: %s, target %s",
-                    source.getCanonicalPath(), target.getCanonicalPath()));
+            pauseResume.printProgress(String.format("Monitoring started for source: %s, target: %s",
+                    source.getCanonicalPath(), target.toPath().getFileName()));
             var scheduler = Executors.newScheduledThreadPool(1);
             var targetMonitor = new TargetMonitor(source, target, progress, pauseResume);
             scheduler.scheduleAtFixedRate(

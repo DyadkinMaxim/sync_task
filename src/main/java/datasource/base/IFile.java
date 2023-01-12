@@ -1,10 +1,8 @@
 package datasource.base;
 
 import core.Progress;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Instant;
 
 /**
  * Represents file from any datasource

@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,9 +37,9 @@ public class SSHDatasource implements Datasource {
         List<Param> params = new ArrayList<>();
         params.add(new Param("host", new JTextField(), "Host: "));
         params.add(new Param("port", new JTextField(), "Port: "));
-        params.add(new Param("systemFilePath",  new JTextField(), "Target directoty path: "));
+        params.add(new Param("systemFilePath", new JTextField(), "Target directoty path: "));
         params.add(new Param("username", new JTextField(), "Username: "));
-        params.add(new Param("choosePrivateKeyPath",  new JTextField(), "Choose private key: "));
+        params.add(new Param("choosePrivateKeyPath", new JTextField(), "Choose private key: "));
         return List.copyOf(params);
     }
 
@@ -52,7 +51,7 @@ public class SSHDatasource implements Datasource {
         }
         var host = Param.getParam(params, "host").getValue();
         var port = Param.getParam(params, "port").equals("")
-                 ? DEFAULT_PORT : Param.getParam(params, "port").getValue();
+                ? DEFAULT_PORT : Param.getParam(params, "port").getValue();
         var username = Param.getParam(params, "username").getValue();
         var privateKeyPath = Param.getParam(params, "choosePrivateKeyPath").getValue();
         systemFilePath = Param.getParam(params, "systemFilePath").getValue();

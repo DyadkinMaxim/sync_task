@@ -42,7 +42,7 @@ public class SyncConfig {
     private JPanel initUI(Datasource targetDatasource) {
         frame = new JFrame("Set configuration properties:");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(350, computeHeight(targetDatasource));
+        frame.setSize(400, computeHeight(targetDatasource));
         frame.setLocation(430, 100);
         frame.setVisible(true);
         frame.setResizable(false);
@@ -68,7 +68,7 @@ public class SyncConfig {
         sourcePathLabel.setSize(150, 40);
         panel.add(sourcePathLabel);
         var sourcePath = new JTextField();
-        sourcePath.setMaximumSize(new Dimension(350, 20));
+        sourcePath.setMaximumSize(new Dimension(400, 20));
         sourcePath.setAlignmentX(Component.LEFT_ALIGNMENT);
         sourcePath.setName("sourcePath");
         panel.add(sourcePath);
@@ -88,7 +88,7 @@ public class SyncConfig {
             panel.add(label);
             var component = param.getUiComponent();
             component.setName(param.getName());
-            component.setMaximumSize(new Dimension(350, 20));
+            component.setMaximumSize(new Dimension(400, 20));
             component.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(component);
             if (component.getName().startsWith("choose")) {
@@ -113,6 +113,7 @@ public class SyncConfig {
         panel.add(Box.createVerticalGlue());
 
         submitBtn.addActionListener(e -> {
+            JOptionPane.showMessageDialog(null, "Connecting...");
             var sourceDatasource = new LocalDatasource();
             var sourceParams = collectSourcePath(sourcePath);
             var targetParams =
