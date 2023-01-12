@@ -45,7 +45,7 @@ public class SSHDatasource implements Datasource {
     }
 
     @Override
-    public synchronized void connect(List<Param> params) throws IOException {
+    public synchronized void connect(List<Param> params) throws IOException, RuntimeException {
         if (isInitialized) {
             log.debug("SSH connection is already initialized");
             return;
@@ -91,7 +91,8 @@ public class SSHDatasource implements Datasource {
     }
 
     private static SSHClient createSSHClient(
-            String sshHost, String sshPort, String sshUser, String sshPrivateKey) {
+            String sshHost, String sshPort, String sshUser, String sshPrivateKey)
+            throws RuntimeException {
         SSHClient client;
         try {
             client = new SSHClient();

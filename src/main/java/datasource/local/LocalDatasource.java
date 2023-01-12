@@ -37,6 +37,10 @@ public class LocalDatasource implements Datasource {
         if (!Files.exists(Path.of(filePath))) {
             throw new IOException("No file found by path: " + filePath);
         }
+
+        if (!(new File(filePath)).isDirectory()) {
+            throw new IOException("Source is not a directory: " + filePath);
+        }
     }
 
     @Override

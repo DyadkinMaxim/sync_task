@@ -3,15 +3,16 @@ package client;
 import core.SyncJob;
 import datasource.base.Datasource;
 import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +31,7 @@ public class PauseResume {
     private final Object lock = new Object();
     private Datasource sourceDatasource;
     private Datasource targetDatasource;
-    private static volatile boolean isPaused;
+    private static AtomicBoolean isPaused = new AtomicBoolean(true);
 
     public synchronized void init(Datasource sourceDatasource, Datasource targetDatasource) {
         this.sourceDatasource = sourceDatasource;
@@ -46,7 +47,6 @@ public class PauseResume {
         frame.setVisible(true);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        isPaused = true;
         createThread().start();
 
         addWindowListener(new WindowAdapter() {
@@ -57,6 +57,8 @@ public class PauseResume {
                     targetDatasource.disconnect();
                 } catch (IOException ex) {
                     log.error(ex.getMessage());
+                    JOptionPane.showMessageDialog(
+                            null, "Can't disconnect of datasources");
                 }
                 e.getWindow().dispose();
             }
@@ -65,7 +67,7 @@ public class PauseResume {
 
     public void allowPause() {
         synchronized (lock) {
-            while (isPaused) {
+            while (isPaused.get()) {
                 try {
                     lock.wait();
                 } catch (InterruptedException e) {
@@ -76,44 +78,29 @@ public class PauseResume {
 
     public void printProgress(String message) {
         textArea.append("\n" + LocalTime.now().truncatedTo(ChronoUnit.SECONDS) + " " + message);
+        textArea.setCaretPosition(textArea.getDocument().getLength());
         log.info(message);
     }
 
     private Thread createThread() {
-        return new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    allowPause();
-                    syncJob();
-                }
-            }
-        });
-    }
-
-    private Thread monitoring = new Thread(new Runnable() {
-        @Override
-        public void run() {
+        return new Thread(() -> {
             while (true) {
                 allowPause();
                 syncJob();
             }
-        }
-    });
+        });
+    }
 
     private void syncJob() {
         SyncJob.job(sourceDatasource, targetDatasource, this);
     }
 
     private ActionListener controlListener =
-            new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    isPaused = !isPaused;
-                    controlBtn.setText(isPaused ? "Resume" : "Pause");
-                    synchronized (lock) {
-                        lock.notifyAll();
-                    }
+            e -> {
+                isPaused.compareAndSet(isPaused.get(), !isPaused.get());
+                controlBtn.setText(isPaused.get() ? "Resume" : "Pause");
+                synchronized (lock) {
+                    lock.notifyAll();
                 }
             };
 }

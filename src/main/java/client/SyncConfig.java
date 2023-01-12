@@ -6,8 +6,6 @@ import datasource.local.LocalDatasource;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +17,7 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
@@ -37,7 +36,6 @@ public class SyncConfig {
         browseFile(panel, sourcePathField);
         var targetComponents = addTargetUI(targetDatasource.getConnectionSettings(), panel);
         addSubmitBtn(panel, sourcePathField, targetDatasource, targetComponents);
-        addMenuBtn(panel);
     }
 
     private JPanel initUI(Datasource targetDatasource) {
@@ -106,7 +104,7 @@ public class SyncConfig {
     private void addSubmitBtn(JPanel panel, JTextField sourcePath, Datasource targetDatasource,
                               List<JComponent> components) {
         panel.add(Box.createVerticalGlue());
-        JButton submitBtn = new JButton("Submit");
+        JButton submitBtn = new JButton("Connect");
         submitBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
         submitBtn.setMaximumSize(new Dimension(100, 20));
         panel.add(submitBtn);
@@ -117,24 +115,11 @@ public class SyncConfig {
             var sourceParams = collectSourcePath(sourcePath);
             var targetParams =
                     collectTargetParams(targetDatasource.getConnectionSettings(), components);
-            connectDatasources(sourceDatasource, sourceParams, targetDatasource, targetParams);
-            frame.setVisible(false);
-            GUIForm.pauseResume.init(sourceDatasource, targetDatasource);
-
-        });
-    }
-
-    private void addMenuBtn(JPanel panel) {
-        JButton menuBtn = new JButton("Menu");
-        menuBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        menuBtn.setMaximumSize(new Dimension(100, 20));
-        panel.add(menuBtn);
-
-        menuBtn.addActionListener(e -> {
-            panel.removeAll();
-            frame.setVisible(false);
-            GUIForm.menu.setVisible(true);
-
+            var isConnected = connectDatasources(sourceDatasource, sourceParams, targetDatasource, targetParams);
+            if (isConnected) {
+                frame.setVisible(false);
+                GUIForm.pauseResume.init(sourceDatasource, targetDatasource);
+            }
         });
     }
 
@@ -162,15 +147,19 @@ public class SyncConfig {
         return configParams;
     }
 
-    private void connectDatasources(
+    private boolean connectDatasources(
             Datasource sourceDatasource, List<Param> sourceParams,
             Datasource targetDatasource, List<Param> targetParams) {
+        boolean isConnected = false;
         try {
             sourceDatasource.connect(sourceParams);
             targetDatasource.connect(targetParams);
-        } catch (IOException ex) {
+            isConnected = true;
+        } catch (Exception ex) {
             log.error(ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Can't connect to datasources");
         }
+        return isConnected;
     }
 
     private void browseFile(JPanel panel, JTextField componentPathFiled) {
@@ -200,6 +189,6 @@ public class SyncConfig {
                 countFileSelector++;
             }
         }
-        return 180 + 50 * (settings.size() + countFileSelector);
+        return 150 + 50 * (settings.size() + countFileSelector);
     }
 }
