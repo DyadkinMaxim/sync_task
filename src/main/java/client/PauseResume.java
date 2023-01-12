@@ -5,6 +5,8 @@ import datasource.base.Datasource;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -14,12 +16,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.sun.java.accessibility.util.AWTEventMonitor.addWindowListener;
+
 @Slf4j
 public class PauseResume {
     private JFrame frame = new JFrame("PauseResume");
     private JButton controlBtn = new JButton("Start sync");
-    private JButton menuBtn = new JButton("Menu");
-    private JButton exitBtn = new JButton("Exit");
     private JTextArea textArea = new JTextArea(5, 20);
     JScrollPane scroll = new JScrollPane(textArea,
             JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -35,15 +37,10 @@ public class PauseResume {
         this.targetDatasource = targetDatasource;
 
         controlBtn.addActionListener(controlListener);
-        menuBtn.addActionListener(menuListener);
-        exitBtn.addActionListener(exitListener);
         textArea.setLineWrap(true);
         textArea.setText("");
         frame.add(controlBtn, BorderLayout.NORTH);
         frame.add(scroll, BorderLayout.CENTER);
-        //frame.add(menuBtn, BorderLayout.CENTER);
-        frame.add(exitBtn, BorderLayout.SOUTH);
-        frame.pack();
         frame.setSize(400, 300);
         frame.setLocation(430, 100);
         frame.setVisible(true);
@@ -51,6 +48,19 @@ public class PauseResume {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         isPaused = true;
         createThread().start();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    sourceDatasource.disconnect();
+                    targetDatasource.disconnect();
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                }
+                e.getWindow().dispose();
+            }
+        });
     }
 
     public void allowPause() {
@@ -59,7 +69,6 @@ public class PauseResume {
                 try {
                     lock.wait();
                 } catch (InterruptedException e) {
-                    // nothing
                 }
             }
         }
@@ -82,7 +91,6 @@ public class PauseResume {
         });
     }
 
-
     private Thread monitoring = new Thread(new Runnable() {
         @Override
         public void run() {
@@ -95,7 +103,6 @@ public class PauseResume {
 
     private void syncJob() {
         SyncJob.job(sourceDatasource, targetDatasource, this);
-        done();
     }
 
     private ActionListener controlListener =
@@ -109,42 +116,4 @@ public class PauseResume {
                     }
                 }
             };
-
-    private ActionListener menuListener =
-            new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    isPaused = true;
-                    interruptMonitoring();
-                    frame.setVisible(false);
-                    GUIForm.menu.setVisible(true);
-                }
-            };
-
-    private ActionListener exitListener =
-            new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        sourceDatasource.disconnect();
-                        targetDatasource.disconnect();
-                        System.exit(1);
-                    } catch (IOException ex) {
-                        log.error(ex.getMessage());
-                    }
-                }
-            };
-
-    private void done() {
-        controlBtn.setText("Start sync");
-        isPaused = true;
-    }
-
-    private void interruptMonitoring() {
-        isPaused = true;
-        synchronized (lock) {
-            lock.notifyAll();
-        }
-        Thread.currentThread().interrupt();
-    }
 }

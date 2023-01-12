@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -20,6 +21,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 
 public class SyncConfig {
 
@@ -43,6 +47,9 @@ public class SyncConfig {
 
         var panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        var border = panel.getBorder();
+        Border margin = new EmptyBorder(5, 5, 5, 5);
+        panel.setBorder(new CompoundBorder(border, margin));
         frame.add(panel);
         return panel;
     }
@@ -56,7 +63,7 @@ public class SyncConfig {
 
         var sourcePathLabel = new JLabel("Choose source directory: ");
         sourcePathLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        sourcePathLabel.setSize(150,40);
+        sourcePathLabel.setSize(150, 40);
         panel.add(sourcePathLabel);
         var sourcePath = new JTextField();
         sourcePath.setMaximumSize(new Dimension(350, 20));
@@ -79,13 +86,14 @@ public class SyncConfig {
             panel.add(label);
             var component = param.getUiComponent();
             component.setName(param.getName());
-            component.setSize(new Dimension(300, 20));
             component.setMaximumSize(new Dimension(350, 20));
             component.setAlignmentX(Component.LEFT_ALIGNMENT);
             panel.add(component);
             if (component.getName().startsWith("choose")) {
-               var componentPathField = (JTextField) component;
-               browseFile(panel, componentPathField);
+                var componentPathField = (JTextField) component;
+                browseFile(panel, componentPathField);
+            } else {
+                panel.add(Box.createVerticalGlue());
             }
 
             components.add(component);
@@ -93,14 +101,16 @@ public class SyncConfig {
         return components;
     }
 
-    private void addSubmitBtn(JPanel panel, JTextField sourcePath,Datasource targetDatasource,
+    private void addSubmitBtn(JPanel panel, JTextField sourcePath, Datasource targetDatasource,
                               List<JComponent> components) {
+        panel.add(Box.createVerticalGlue());
         JButton submitBtn = new JButton("Submit");
         submitBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        submitBtn.setMaximumSize(new Dimension(100, 20));
         panel.add(submitBtn);
+        panel.add(Box.createVerticalGlue());
 
         submitBtn.addActionListener(new ActionListener() {
-            @SuppressWarnings("deprecation")
             public void actionPerformed(ActionEvent e) {
                 var sourceDatasource = new LocalDatasource();
                 var sourceParams = collectSourcePath(sourcePath);
@@ -117,6 +127,7 @@ public class SyncConfig {
     private void addMenuBtn(JPanel panel) {
         JButton menuBtn = new JButton("Menu");
         menuBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menuBtn.setMaximumSize(new Dimension(100, 20));
         panel.add(menuBtn);
 
         menuBtn.addActionListener(new ActionListener() {
@@ -137,7 +148,6 @@ public class SyncConfig {
     }
 
     private List<Param> collectTargetParams(List<Param> settings, List<JComponent> components) {
-        // todo fill settings
         List<Param> configParams = new ArrayList<>();
         for (var component : components) {
             var param = Param.getParam(settings, component.getName());
@@ -168,8 +178,10 @@ public class SyncConfig {
 
     private void browseFile(JPanel panel, JTextField componentPathFiled) {
         JButton browseBtn = new JButton("Browse");
+        browseBtn.setMaximumSize(new Dimension(100, 20));
         browseBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
         panel.add(browseBtn);
+        panel.add(Box.createVerticalGlue());
 
         browseBtn.addActionListener(new ActionListener() {
             @SuppressWarnings("deprecation")
@@ -178,7 +190,7 @@ public class SyncConfig {
                 fileChooser.setCurrentDirectory(new File("."));
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 int response = fileChooser.showOpenDialog(null);
-                if(response == JFileChooser.APPROVE_OPTION) {
+                if (response == JFileChooser.APPROVE_OPTION) {
                     File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
                     componentPathFiled.setText(file.getAbsolutePath());
                 }
@@ -187,14 +199,13 @@ public class SyncConfig {
     }
 
     private int computeHeight(Datasource targetDatasource) {
-        int size = 0;
         var settings = targetDatasource.getConnectionSettings();
         int countFileSelector = 0;
-        for(var setting : settings) {
-            if(setting.getName().startsWith("choose")){
+        for (var setting : settings) {
+            if (setting.getName().startsWith("choose")) {
                 countFileSelector++;
             }
         }
-       return 180 + 40 * (settings.size() + countFileSelector);
+        return 180 + 50 * (settings.size() + countFileSelector);
     }
 }
