@@ -6,6 +6,7 @@ import datasource.local.LocalDatasource;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,7 +44,10 @@ public class SyncConfig {
         frame = new JFrame("Set configuration properties:");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, computeHeight(targetDatasource));
-        frame.setLocation(430, 100);
+        var dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);;
         frame.setVisible(true);
         frame.setResizable(false);
 

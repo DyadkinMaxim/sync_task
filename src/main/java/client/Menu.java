@@ -4,6 +4,8 @@ import datasource.base.DatasourceManager;
 import datasource.local.LocalDatasource;
 import datasource.ssh.SSHDatasource;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -34,7 +36,10 @@ class Menu {
         panel.add(selectBtn, BorderLayout.LINE_END);
 
         frame.setSize(300, 70 + (20 * targetTypes.length));
-        frame.setLocation(430, 100);
+        var dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
         frame.setVisible(true);
 
         selectBtn.addActionListener(e -> {
