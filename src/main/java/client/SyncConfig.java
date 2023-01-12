@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SyncConfig {
 
-    JFrame frame = new JFrame("Set configuration properties:");
+    private JFrame frame;
 
     public void init(Datasource targetDatasource) {
         var panel = initUI(targetDatasource);
@@ -36,9 +36,11 @@ public class SyncConfig {
         browseFile(panel, sourcePathField);
         var targetComponents = addTargetUI(targetDatasource.getConnectionSettings(), panel);
         addSubmitBtn(panel, sourcePathField, targetDatasource, targetComponents);
+        addMenuBtn(panel);
     }
 
     private JPanel initUI(Datasource targetDatasource) {
+        frame = new JFrame("Set configuration properties:");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(350, computeHeight(targetDatasource));
         frame.setLocation(430, 100);
@@ -123,6 +125,20 @@ public class SyncConfig {
         });
     }
 
+    private void addMenuBtn(JPanel panel) {
+        JButton menuBtn = new JButton("Menu");
+        menuBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        menuBtn.setMaximumSize(new Dimension(100, 20));
+        panel.add(menuBtn);
+
+        menuBtn.addActionListener(e -> {
+            frame.getContentPane().removeAll();
+            frame.repaint();
+            frame.setVisible(false);
+            GUIForm.menu.setVisible(true);
+        });
+    }
+
     private List<Param> collectSourcePath(JTextField sourcePath) {
         var sourceParams = new LocalDatasource().getConnectionSettings();
         Param.getParam(sourceParams, "chooseFilePath").setValue(sourcePath.getText());
@@ -189,6 +205,6 @@ public class SyncConfig {
                 countFileSelector++;
             }
         }
-        return 150 + 50 * (settings.size() + countFileSelector);
+        return 180 + 50 * (settings.size() + countFileSelector);
     }
 }

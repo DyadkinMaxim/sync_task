@@ -58,7 +58,7 @@ public class PauseResume {
                 } catch (IOException ex) {
                     log.error(ex.getMessage());
                     JOptionPane.showMessageDialog(
-                            null, "Can't disconnect of datasources");
+                            null, "Can't disconnect from datasources");
                 }
                 e.getWindow().dispose();
             }

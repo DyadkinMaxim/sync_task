@@ -55,7 +55,6 @@ public class Progress {
     }
 
     public void resetProgress() {
-        //Recursive folders creation/deletion are complex to track -> fix here
         if(processedFileNumber.longValue() != totalFileNumber) {
             processedFileNumber.set(totalFileNumber);
             countProgress();
