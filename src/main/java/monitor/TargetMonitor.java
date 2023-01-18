@@ -25,7 +25,6 @@ public class TargetMonitor implements Runnable {
 
     @Override
     public void run() {
-        var sync = new SyncImpl();
         try {
             var sourceLM = source.getLastModified();
             var targetLM = target.getLastModified();

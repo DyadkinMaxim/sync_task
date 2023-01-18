@@ -31,4 +31,5 @@ Maxim Dyadkin
  - Arcitecture is built to avoid significant changes while adding new target datasource:
   New datasource should be registred in DatasourceManager(in Menu class)
    and implemnted in datasource package. Minor(or mostly none) UI changes are neccessary.
+ - There is integration test for local case: LocalSyncTest. Is it neccessary to test any remote case in automated way?  
  - In case of any questions feel free to ask Me: dyadkinm@gmail.com

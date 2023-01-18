@@ -101,10 +101,14 @@ public class PauseResume {
 
     private ActionListener controlListener =
             e -> {
-                isPaused.compareAndSet(isPaused.get(), !isPaused.get());
-                controlBtn.setText(isPaused.get() ? "Resume" : "Pause");
+                changePause();
                 synchronized (lock) {
                     lock.notifyAll();
                 }
             };
+
+    public void changePause() {
+        isPaused.compareAndSet(isPaused.get(), !isPaused.get());
+        controlBtn.setText(isPaused.get() ? "Resume" : "Pause");
+    }
 }
