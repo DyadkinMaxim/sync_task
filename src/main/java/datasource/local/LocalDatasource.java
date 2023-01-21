@@ -36,7 +36,6 @@ public class LocalDatasource implements Datasource {
         if (!Files.exists(Path.of(filePath))) {
             throw new IOException("No file found by path: " + filePath);
         }
-
         if (!(new File(filePath)).isDirectory()) {
             throw new IOException("Source is not a directory: " + filePath);
         }
@@ -53,11 +52,11 @@ public class LocalDatasource implements Datasource {
 
     @Override
     public IFile getRoot() {
-         var newFile = new File(filePath);
+        var newFile = new File(filePath);
         return new LocalFile(newFile, null);
     }
 
-    public Datasource copy(){
+    public Datasource copy() {
         var copy = new LocalDatasource();
         copy.setFilePath(this.getFilePath());
         return copy;

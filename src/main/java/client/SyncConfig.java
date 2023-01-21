@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -18,21 +17,28 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SyncConfig {
 
-    private JFrame frame;
+    private JFrame frame = new JFrame("Set configuration properties:");
+    private JPanel panel = new JPanel();
+    private ConnectionUI connectionUI = new ConnectionUI();
+    private Datasource sourceDatasource;
+    private Datasource targetDatasource;
+    private boolean isConnected = false;
 
     public void init(Datasource targetDatasource) {
-        var panel = initUI(targetDatasource);
+        this.targetDatasource = targetDatasource;
+        var panel = initFrame(targetDatasource);
         var sourcePathField = addSourceUI(panel);
         browseFile(panel, sourcePathField);
         var targetComponents = addTargetUI(targetDatasource.getConnectionSettings(), panel);
@@ -40,18 +46,18 @@ public class SyncConfig {
         addMenuBtn(panel);
     }
 
-    private JPanel initUI(Datasource targetDatasource) {
-        frame = new JFrame("Set configuration properties:");
+    private JPanel initFrame(Datasource targetDatasource) {
+        frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, computeHeight(targetDatasource));
         var dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
         int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
-        frame.setLocation(x, y);;
+        frame.setLocation(x, y);
         frame.setVisible(true);
         frame.setResizable(false);
 
-        var panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         var border = panel.getBorder();
         Border margin = new EmptyBorder(5, 5, 5, 5);
@@ -117,17 +123,20 @@ public class SyncConfig {
         panel.add(Box.createVerticalGlue());
 
         submitBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(null, "Connecting...");
-            var sourceDatasource = new LocalDatasource();
+            this.sourceDatasource = new LocalDatasource();
             var sourceParams = collectSourcePath(sourcePath);
             var targetParams =
                     collectTargetParams(targetDatasource.getConnectionSettings(), components);
-            var isConnected = connectDatasources(sourceDatasource, sourceParams, targetDatasource, targetParams);
-            if (isConnected) {
-                frame.setVisible(false);
-                GUIForm.pauseResume.init(sourceDatasource, targetDatasource);
-            }
+            connectionUI.connectDatasources(sourceDatasource, sourceParams, targetDatasource, targetParams, this);
         });
+    }
+
+    public void finishConfig(boolean isConnected) {
+        this.isConnected = isConnected;
+        if (isConnected) {
+            frame.setVisible(false);
+            GUIForm.pauseResume.init(sourceDatasource, targetDatasource);
+        }
     }
 
     private void addMenuBtn(JPanel panel) {
@@ -166,21 +175,6 @@ public class SyncConfig {
             configParams.add(param);
         }
         return configParams;
-    }
-
-    private boolean connectDatasources(
-            Datasource sourceDatasource, List<Param> sourceParams,
-            Datasource targetDatasource, List<Param> targetParams) {
-        boolean isConnected = false;
-        try {
-            sourceDatasource.connect(sourceParams);
-            targetDatasource.connect(targetParams);
-            isConnected = true;
-        } catch (Exception ex) {
-            log.error(ex.getMessage());
-            JOptionPane.showMessageDialog(null, "Can't connect to datasources");
-        }
-        return isConnected;
     }
 
     private void browseFile(JPanel panel, JTextField componentPathFiled) {

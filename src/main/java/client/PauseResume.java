@@ -2,6 +2,7 @@ package client;
 
 import core.SyncJob;
 import datasource.base.Datasource;
+import datasource.base.Param;
 import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
@@ -25,10 +26,8 @@ public class PauseResume {
     private JFrame frame = new JFrame("PauseResume");
     private JButton controlBtn = new JButton("Start sync");
     private JTextArea textArea = new JTextArea(5, 20);
-    JScrollPane scroll = new JScrollPane(textArea,
-            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+    private JScrollPane scroll = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
             JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-
     private final Object lock = new Object();
     private Datasource sourceDatasource;
     private Datasource targetDatasource;
@@ -38,6 +37,8 @@ public class PauseResume {
         this.sourceDatasource = sourceDatasource;
         this.targetDatasource = targetDatasource;
 
+        frame.pack();
+        frame.setLocationRelativeTo(null);
         controlBtn.addActionListener(controlListener);
         textArea.setLineWrap(true);
         textArea.setText("");
@@ -52,7 +53,6 @@ public class PauseResume {
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         createThread().start();
-
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -75,6 +75,7 @@ public class PauseResume {
                 try {
                     lock.wait();
                 } catch (InterruptedException e) {
+                    log.error(e.getMessage());
                 }
             }
         }

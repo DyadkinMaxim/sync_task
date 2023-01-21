@@ -4,7 +4,6 @@ import datasource.base.DatasourceManager;
 import datasource.local.LocalDatasource;
 import datasource.ssh.SSHDatasource;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -14,16 +13,18 @@ import javax.swing.JPanel;
 
 class Menu {
     private static JFrame frame = new JFrame("Start menu");
+    private static DatasourceManager dsManager = new DatasourceManager();
 
     public static void main(String[] args) {
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
         var panel = new JPanel();
         frame.add(panel);
         var label = new JLabel("Select target type: ");
         panel.add(label, BorderLayout.LINE_START);
 
-        var dsManager = new DatasourceManager();
         dsManager.add(new LocalDatasource());
         dsManager.add(new SSHDatasource());
         var targetTypes = dsManager.getNames().toArray(new String[0]);
