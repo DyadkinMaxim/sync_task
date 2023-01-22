@@ -5,6 +5,7 @@ import datasource.base.Datasource;
 import datasource.base.IFile;
 import lombok.extern.slf4j.Slf4j;
 import monitor.DatasourceMonitor;
+import monitor.SourceMonitor;
 
 /** Represents executable task for process consuming
  */
@@ -21,6 +22,7 @@ public class SyncJob {
         var progress = new Progress(pauseResume);
         source.setProgress(progress);
         localTarget.setProgress(progress);
-        DatasourceMonitor.monitor(source, localTarget, progress, pauseResume);
+        var datasourceMonitor = new DatasourceMonitor(new SourceMonitor());
+        datasourceMonitor.monitor(source, localTarget, progress, pauseResume);
     }
 }
