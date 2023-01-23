@@ -26,9 +26,7 @@ public class TargetMonitor implements Runnable {
     @Override
     public void run() {
         try {
-            var sourceLM = source.getLastModified();
-            var targetLM = target.getLastModified();
-            if (isFirst || sourceLM != targetLM) {
+            if (isFirst || source.getLastModified() != target.searchLastModified()) {
                 FileUtils.doSync(source, target, progress, pauseResume, TARGET_NAME);
                 isFirst = false;
             }

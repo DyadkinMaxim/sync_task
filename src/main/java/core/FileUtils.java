@@ -13,16 +13,21 @@ public class FileUtils {
 
     private static Sync sync = new SyncImpl();
     public static volatile Instant lastSync;
+    public static volatile boolean isLocked = false;
 
     public static synchronized void doSync(
             IFile source, IFile target, Progress progress, PauseResume pauseResume, String type) {
         pauseResume.printProgress(String.format("%s-event sync started: %s", type, source.toPath().getFileName()));
         try {
             progress.initProgress(source, target);
+            isLocked = true;
+            log.debug("Lock acquired");
             sync.synchronize(source, target, progress, pauseResume);
-            source.setLastModified(target.getLastModified());
+            source.setLastModified(target.searchLastModified());
             lastSync = Instant.now();
             progress.resetProgress();
+            isLocked = false;
+            log.debug("Lock released");
         } catch (IOException ex) {
             log.error(ex.getMessage());
             JOptionPane.showMessageDialog(null, ex.getMessage());

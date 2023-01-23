@@ -65,6 +65,28 @@ public class LocalFile implements IFile {
         return file.lastModified();
     }
 
+    @Override
+    public long searchLastModified() {
+        if (!file.isDirectory()) {
+            return file.lastModified();
+        } else {
+            return searchNewestLastModified(file);
+        }
+    }
+
+    private static long searchNewestLastModified(File dir) {
+        File[] files = dir.listFiles();
+        long latestDate = 0;
+        for (File file : files) {
+            long fileModifiedDate = file.isDirectory()
+                    ? searchNewestLastModified(file) : file.lastModified();
+            if (fileModifiedDate > latestDate) {
+                latestDate = fileModifiedDate;
+            }
+        }
+        return Math.max(latestDate, dir.lastModified());
+    }
+
     public void setLastModified(long value) {
         file.setLastModified(value);
     }

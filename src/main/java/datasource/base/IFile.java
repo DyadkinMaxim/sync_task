@@ -23,7 +23,9 @@ public interface IFile {
 
     long length();
 
-    long getLastModified();
+    long searchLastModified(); // recoursive search of newest lastModified in all subdirectories
+
+    long getLastModified(); //simple file lastModified value
 
     void setLastModified(long value);
 

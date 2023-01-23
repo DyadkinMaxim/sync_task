@@ -30,7 +30,7 @@ public class SSHFile implements IFile {
 
     @Override
     public boolean exists() {
-        return getAttrs() != null;
+        return getAttrs(this) != null;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class SSHFile implements IFile {
 
     @Override
     public boolean isDirectory() {
-        return getAttrs().getMode().getType().equals(FileMode.Type.DIRECTORY);
+        return getAttrs(this).getMode().getType().equals(FileMode.Type.DIRECTORY);
     }
 
     @Override
@@ -93,12 +93,37 @@ public class SSHFile implements IFile {
 
     @Override
     public long length() {
-        return getAttrs().getSize();
+        return getAttrs(this).getSize();
     }
 
     @Override
     public long getLastModified() {
-        return getAttrs().getMtime();
+        return getAttrs(this).getMtime();
+    }
+
+    @Override
+    public long searchLastModified() {
+        if (!isDirectory()) {
+            return getAttrs(this).getMtime();
+        } else {
+            return searchNewestLastModified(this);
+        }
+    }
+
+    private long searchNewestLastModified(IFile root) {
+        long newestTime = getAttrs(root).getMtime();
+        String[] files = root.list();
+        if (files != null) {
+            for (var child : files) {
+                IFile next = root.getChild(child);
+                if (next.isDirectory()) {
+                    newestTime = Math.max(newestTime, searchNewestLastModified(next));
+                } else {
+                    newestTime = Math.max(newestTime, getAttrs(next).getMtime());
+                }
+            }
+        }
+        return newestTime;
     }
 
     @Override
@@ -117,10 +142,10 @@ public class SSHFile implements IFile {
                 new FileSystemFile(new File(systemFile.getFile(), child)), progress);
     }
 
-    private FileAttributes getAttrs() {
+    private FileAttributes getAttrs(IFile file) {
         FileAttributes attrs = null;
         try {
-            attrs = sftpClient.statExistence(forwardSlashPath(this));
+            attrs = sftpClient.statExistence(forwardSlashPath(file));
         } catch (IOException ex) {
             log.error(ex.getMessage());
         }

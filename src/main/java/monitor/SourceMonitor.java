@@ -51,11 +51,14 @@ public class SourceMonitor {
                     var sourceLastModified = Instant.now();
                     // To avoid miss sync from Watcher: sourceLastModified - lastSync > 1 second
                     var shiftedSourceLM = sourceLastModified.minus(1, ChronoUnit.SECONDS);
-                    if (FileUtils.lastSync != null && shiftedSourceLM.compareTo(FileUtils.lastSync) > 0) {
-                        FileUtils.doSync(source, target, progress, pauseResume, SOURCE_NAME);
-                    } else {
-                        log.info(String.format("Event %s is ignored - already processed",
-                                rootPath.resolve(event.context().toString())));
+                    if(!FileUtils.isLocked) {
+                        if (FileUtils.lastSync != null && shiftedSourceLM.compareTo(FileUtils.lastSync) > 0) {
+                            log.info("Watch service shiftedLM: " + shiftedSourceLM);
+                            FileUtils.doSync(source, target, progress, pauseResume, SOURCE_NAME);
+                        } else {
+                            log.info(String.format("Event %s is ignored - already processed",
+                                    rootPath.resolve(event.context().toString())));
+                        }
                     }
                 }
                 key.reset();
