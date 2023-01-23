@@ -23,6 +23,7 @@ public class FileUtils {
             isLocked = true;
             log.debug("Lock acquired");
             sync.synchronize(source, target, progress, pauseResume);
+            pauseResume.printProgress("Finishing sync...please wait :)");
             source.setLastModified(target.searchLastModified());
             lastSync = Instant.now();
             progress.resetProgress();
