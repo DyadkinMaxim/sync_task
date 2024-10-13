@@ -1,7 +1,6 @@
-## Jet Brains test task
-Maxim Dyadkin
+# sync tool
+Synchronization of local files with the related ones at remote server via SSH
 
-## Task Requiremenents
   ### Components:
   - Client component:
     - Menu - select target type
