@@ -1,2 +1,2 @@
-# jb_task
-File sync task
+# sync tool
+Synchronization of local files with the related ones at remote server via SSH
